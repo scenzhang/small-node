@@ -19,20 +19,23 @@ app.listen(process.env.PORT, () => console.log(`listening on port ${process.env.
 // });
 
 app.post('/api/users', urlencodedParser, (req, res) => {
-  console.log(req);
-    models.User.create({
+    let newUser = new models.User({
       username: req.body.username,
       email: req.body.email,
       passwordDigest: "placeholder",
       created: Date.now(),
       updated: Date.now()
-    },
-    (err, user) => {
+    });
+    newUser.save(
+    (err) => {
       if (err) {
-        // console.log(err);
-        res.status(400).end('invalid');
+        res.status(400).end(err.errmsg);
       } else {
-        res.status(200).end('user created');
+        res.status(200).json(newUser);
       }
     });
 });
+
+app.post('/api/stories', urlencodedParser, (req, res) => {
+
+})
