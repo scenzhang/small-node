@@ -29,7 +29,12 @@ const storySchema = new mongoose.Schema({
     required: true
   },
   blurb: String,
-  author_id: {
+  authorId: {
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User',
+    required: true
+  },
+  text: {
     type: String,
     required: true
   },
