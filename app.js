@@ -18,6 +18,9 @@ app.use(session({
   saveUninitialized: false
 }));
 
+app.use("/public", express.static(__dirname + "/public"));
+
+
 passport.use(new Strategy(
   (username, password, done) => {
     models.User.findOne({username}, (err, user) => {
@@ -65,7 +68,8 @@ const urlencodedParser = bodyParser.urlencoded({
 });
 
 app.get('/', (req, res) => {
-  res.end(`Welcome, ${req.user ?  req.user.username : 'guest'}`);
+  res.sendFile(path.join(__dirname + '/application.html'));
+  // res.end(`Welcome, ${req.user ?  req.user.username : 'guest'}`);
 });
 
 app.get('/blah', (req, res) => {
