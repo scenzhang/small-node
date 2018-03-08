@@ -1,0 +1,36 @@
+nav {
+  display: flex;
+  justify-content: space-between;
+
+}
+.right-nav {
+  vertical-align: middle;
+}
+.right-nav .light-button {
+  margin: 0 5px;
+}
+
+.main-nav {
+  border-bottom: 1px solid rgb(214, 209, 209);
+  background-color: white;
+  padding: 20px;
+  line-height: 30px;
+  // box-sizing: border-box;
+
+}
+
+.logo {
+  color: black!important;
+  margin: 0 auto;
+  font-size: 35px;
+}
+
+
+.loggedOutNav {
+  display: flex;
+  /* padding: 4px; */
+}
+
+.loggedOutNav a {
+  margin: 5px 10px;
+}

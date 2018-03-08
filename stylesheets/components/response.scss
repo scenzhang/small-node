@@ -1,0 +1,100 @@
+.response, .user-item {
+    border: 1px solid rgba(0, 0, 0, 0.09);
+    background-color: #fff;
+    margin: 5px 0;
+    padding: 10px; 
+}
+
+.user-item {
+    margin: 10px auto;
+    width: 55%;
+}
+.list-item-container {
+    margin: 25px 0;
+}
+
+.responses,
+.response-form-container,
+.response-header {
+    margin: 0 auto;
+    width: 60%;
+}
+
+.response-header {
+    width: 66%;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.response-item-footer, .item-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  color: rgba(0,0,0,0.48);
+}
+.level-0 {
+  margin-left: 0px;
+}
+[class*=level-] {
+  margin-left: 15px;
+}
+
+.response-body, .item-body {
+  margin: 15px 0;
+}
+.divider-line {
+    border-top: 2px solid rgba(0, 0, 0, 0.54);
+    width: 75px;
+    padding: 10px;
+    margin-left: 30px;
+}
+
+.responses-container {
+    background-color: rgb(250, 250, 250);
+    flex-grow: 1;
+    width: 100%;
+    padding: 20px 0;
+}
+
+.response-field {
+    width: 100%;
+    margin: 0 auto;
+    resize: none;
+}
+
+.response-form-container {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    background: #fff;
+    border-radius: 3px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    width: 60%;
+}
+
+.parent-container {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .04);
+    border: 1px solid rgba(0, 0, 0, 0.09);
+    display: flex;
+    // flex-direction: column;
+    justify-content: space-between;
+    padding: 14px;
+
+}
+.num-responses {
+  float: right;
+  color: rgba(0,0,0,0.54); 
+}
+.num-responses span {
+  padding: 3px;
+}
+.parent-author,
+.prompt {
+    color: rgba(0, 0, 0, 0.54);
+}
+
+.parent-container div {
+    margin: 0px;
+    padding: 5px;
+    font-size: 14px;
+}

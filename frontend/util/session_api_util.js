@@ -1,17 +1,17 @@
 
-export function signup(user_params) {
+export function signup({email, password, name, blurb}) {
   return $.ajax({
     method: 'post',
     url: 'api/users',
-    data: { user: user_params }
+    data: { email, password, name, blurb }
   });
 }
 
-export function login(user_params) {
+export function login({email, password}) {
   return $.ajax({
     method: 'post',
-    url: 'api/session',
-    data: { user: user_params }
+    url: 'login',
+    data: { username: email, password }
   });
 }
 

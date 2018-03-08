@@ -1,0 +1,139 @@
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, or any plugin's
+ * vendor/assets/stylesheets directory can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+ * compiled file so the styles you add here take precedence over styles defined in any other CSS/SCSS
+ * files in this directory. Styles in this file should be added after the last require_* statement.
+ * It is generally better to create a new file per style scope.
+ *
+ *= require_tree .
+ *= require_self
+ *= ./forms.scss
+ */
+
+// // CSS Reset
+// @import "base/reset.scss";
+span,
+div {
+    font-family: Roboto;
+}
+
+body {
+    margin: 0;
+}
+
+ul {
+    list-style: none;
+    font-family: Roboto;
+}
+
+[class*='-button'] {
+    border-radius: 5px;
+    padding: 4px 12px;
+    font-family: Roboto;
+    height: 30px;
+    width: fit-content;
+    cursor: pointer;
+}
+.black-button {
+    background-color:#292929;
+    color: white;
+    border: 1px solid #292929;
+}
+.black-button:hover {
+    background-color: #727171;
+    border: 1px solid #727171;
+}
+.dark-button {
+    background-color: rgb(8, 185, 138);
+    border: 1px solid rgb(3, 168, 124);
+    color: white;
+    
+}
+
+.dark-button:hover {
+    background-color: rgb(3, 155, 115);
+}
+
+.dark-button:disabled {
+    background-color: rgba(10, 236, 176, 0.514);
+    color: rgb(85, 84, 84);
+    cursor: default;
+}
+
+.grey-hoverable {
+    color: rgba(0,0,0,0.50)!important;
+    margin: 5px 0;
+}
+.grey-hoverable:hover {
+    color: rgba(0,0,0,0.60)!important;
+}
+.light-button {
+    background-color: white;
+    color: rgb(8, 185, 138);
+    border: 1px solid rgb(8, 185, 138);
+}
+
+.light-button:hover {
+    color: rgb(3, 155, 115);
+    border: 1px solid rgb(3, 155, 115);
+}
+.no-color-button {
+    background-color: white;
+    border: 1px solid rgb(133, 132, 132);
+    color: rgb(133, 132, 132);
+}
+.no-color-button:disabled {
+    cursor: default;
+    color: rgba(133,132,132, 0.3)
+}
+
+a {
+    text-decoration: none;
+    cursor: pointer;
+}
+.greentext {
+    color: rgb(8, 185, 138)
+    
+}
+.greentext:hover {
+    color: rgb(3, 155, 115);
+}
+
+.serif {
+    font-family: "Playfair Display";
+}
+
+.dropdown-toggle {
+    cursor: pointer;
+    fill: rgba(0, 0, 0, 0.50);
+}
+
+.dropdown-toggle:hover {
+    fill: rgba(0, 0, 0, 0.85);
+}
+
+.hidden {
+    display: none
+}
+
+//components
+// @import "components/*";
+.app {
+    height: 100%;
+    min-height: 100vh;
+    width: 100%;
+}
+
+body {
+    height: 100%;
+    min-height: 100vh;
+    width: 100%;
+}
+#root {
+    width: 100%;
+}

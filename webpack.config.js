@@ -20,9 +20,10 @@ module.exports = {
   entry: "./frontend/small.jsx",
   output: {
     path: path.resolve(__dirname, "public", "javascripts"),
-    filename: "bundle.js"
+    filename: "bundle.js",
+    publicPath: 'public/javascripts/'
   },
-  plugins: plugins,
+  // plugins: plugins,
   module: {
     rules: [
       {

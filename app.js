@@ -23,13 +23,13 @@ app.use("/public", express.static(__dirname + "/public"));
 
 passport.use(new Strategy(
   (username, password, done) => {
-    models.User.findOne({username}, (err, user) => {
+    models.User.findOne({email: username}, (err, user) => {
       bcrypt.compare(password, user.passwordDigest, (err, res) => {
         if (res) {
+          console.log(user)
           return done(null, {
-            username: user.username,
             id: user._id,
-            email: user.email
+            username: user.email
           });
         } else {
           return done(null, false);
@@ -46,7 +46,8 @@ app.use(passport.session());
 const ensureAuthenticated = (req, res, next)=> {
   if (req.isAuthenticated()) {
     // req.user is available for use here
-    return next(); }
+    return next(); 
+  }
 
   // denied. redirect to login
   res.redirect('/login')
@@ -107,18 +108,24 @@ app.listen(process.env.PORT, () => console.log(`listening on port ${process.env.
 // });
 // console.log(testUID);
 app.post('/api/users', urlencodedParser, (req, res) => {
+  // console.log(req.body)
   bcrypt.hash(req.body.password, 5, (err, hash) => {
     let newUser = new models.User({
-      username: req.body.username,
       email: req.body.email,
       passwordDigest: hash,
+      blurb: req.body.blurb,
+      name: req.body.name,
       created: Date.now(),
       updated: Date.now()
     });
     newUser.save(
       (err) => {
+        let message;
         if (err) {
-          res.status(400).end(err.errmsg);
+          if (err.code === 11000) {
+            message = "Email taken";
+          }// only email has unique constraint for users
+          res.status(400).end(message);
         } else {
           res.status(200).json({username: newUser.username});
         }
@@ -126,7 +133,9 @@ app.post('/api/users', urlencodedParser, (req, res) => {
     
   })
 });
-
+app.get('api/articles', urlencodedParser, (req, res) => {
+  models.Article
+})
 app.post('/api/stories', urlencodedParser, ensureAuthenticated, (req, res) => {
   // console.log(testUser);
   let newStory = new models.Story({

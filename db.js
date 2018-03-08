@@ -3,10 +3,9 @@ const mongoose = require('mongoose');
 
 
 const userSchema = new mongoose.Schema({
-  username: {
+  name: {
     type: String,
     required: true,
-    unique: true
   },
   email: {
     type: String,
@@ -18,6 +17,7 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   sessionToken: String,
+  blurb: String,
   created: Date,
   updated: Date
 });
@@ -50,5 +50,34 @@ const storySchema = new mongoose.Schema({
 
 const Story = mongoose.model('Story', storySchema);
 
+const articleSchema = mongoose.Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  blurb: String,
+  authorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  body: {
+    type: String,
+    required: true
+  },
+  created: Date,
+  updated: Date,
+});
+const Article = mongoose.model('Article', articleSchema);
 
-module.exports = {  User, Story };
+const responseSchema = mongoose.Schema( {
+
+});
+const Response = mongoose.model('Response', responseSchema);
+
+const followSchema = mongoose.Schema( {
+
+});
+
+const Follows = mongoose.model('Follows', followSchema)
+module.exports = {  User, Story, Article };

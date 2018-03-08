@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon app.js",
+    "build-css": "node-sass --include-path stylesheets/ public/stylesheets/main.css",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -42,7 +43,10 @@
     "webpack": "^4.1.0"
   },
   "devDependencies": {
+    "faker": "^4.1.0",
     "morgan": "^1.9.0",
+    "node-minify": "^2.4.1",
+    "node-sass": "^4.7.2",
     "nodemon": "^1.17.1",
     "webpack-cli": "^2.0.10"
   }
