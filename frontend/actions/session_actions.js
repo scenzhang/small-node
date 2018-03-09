@@ -20,6 +20,14 @@ export const signup = (user) => (dispatch) => {
   ); 
 }
 
+export const fetchCurrentUser = () => (dispatch) => {
+  return SessionUtil.fetchCurrentUser()
+  .then(
+    (user) => dispatch(receiveCurrentUser(user)),
+    (res) => dispatch(receiveErrors(res.responseJSON))
+  )
+}
+
 export const logout = () => (dispatch) => {
   return SessionUtil.logout()
     .then(() => dispatch(receiveCurrentUser(null)))
@@ -35,3 +43,4 @@ export const receiveCurrentUser = (currUser) => {
 export const receiveErrors = (errors) => {
   return { type: RECEIVE_SESSION_ERRORS, errors };
 }
+

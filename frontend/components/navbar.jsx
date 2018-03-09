@@ -11,6 +11,8 @@ class NavBar extends React.Component {
   componentDidMount() {
     if (this.props.currentUser) {
       this.props.receiveUser(this.props.currentUser); //we do this so on refresh, state is still populated with current user's follows
+    } else {
+      this.props.fetchUser();
     }
   }
   render() {
@@ -60,6 +62,7 @@ const mapDispatchToProps = (dispatch) => ( {
   logout: () => dispatch(sessionActions.logout()),
   clearErrors: () => dispatch(sessionActions.clearErrors()),
   demoLogin: ()=> dispatch(sessionActions.login({email:"demo@small.com", password:"asdfasdf"})),
+  fetchUser: ()=> dispatch(sessionActions.fetchCurrentUser()),
   receiveUser: (u) => dispatch(sessionActions.receiveCurrentUser(u))
 });
 

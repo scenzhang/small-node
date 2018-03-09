@@ -23,7 +23,12 @@ app.use("/public", express.static(__dirname + "/public"));
 
 passport.use(new Strategy(
   (username, password, done) => {
-    models.User.findOne({email: username}, (err, user) => {
+    models.User.findOne({
+      email: username
+    }, (err, user) => {
+      if (!user) {
+        return done(null, false);
+      }
       bcrypt.compare(password, user.passwordDigest, (err, res) => {
         if (res) {
           console.log(user)
@@ -36,17 +41,17 @@ passport.use(new Strategy(
         }
       });
     });
-    
+
 
   }));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-const ensureAuthenticated = (req, res, next)=> {
+const ensureAuthenticated = (req, res, next) => {
   if (req.isAuthenticated()) {
     // req.user is available for use here
-    return next(); 
+    return next();
   }
 
   // denied. redirect to login
@@ -59,9 +64,9 @@ passport.serializeUser(function (user, cb) {
 
 
 passport.deserializeUser(function (id, cb) {
-    models.User.findById(id, (err, user) =>{
-      cb(err, user);
-    })
+  models.User.findById(id, (err, user) => {
+    cb(err, user);
+  })
 });
 
 const urlencodedParser = bodyParser.urlencoded({
@@ -81,8 +86,19 @@ app.post('/login', urlencodedParser,
     failureRedirect: '/login'
   }),
   (req, res) => {
-    console.log(req.user);
-    res.redirect('/');
+    models.User.findById(req.user.id, (err, user) =>{
+      res.status(200).json({
+        id: user._id,
+        email: user.email,
+        blurb: user.blurb,
+        followers: [],
+        following: [],
+        articles: [],
+        responses: [],
+        feedItems: []
+      });
+
+    })
   });
 
 app.get('/login', (req, res) => {
@@ -99,6 +115,36 @@ app.get('/new', urlencodedParser, ensureAuthenticated, (req, res) => {
   res.end(`new post by ${req.user.username}`);
 })
 
+app.get('/api/users/:userID', urlencodedParser, (req, res) => {
+  models.User.findById(userID, (err, user) =>{
+    res.status(200).json({
+      id: user._id,
+      email: user.email,
+      blurb: user.blurb,
+      followers: [],
+      following: [],
+      articles: [],
+      responses: [],
+      feedItems: []
+    });
+
+  })
+})
+
+app.get('/api/currUser', urlencodedParser, ensureAuthenticated, (req, res) => {
+  models.User.findById(req.session.passport.user, (err, user) => {
+    res.status(200).json({
+      id: user._id,
+      email: user.email,
+      blurb: user.blurb,
+      followers: [],
+      following: [],
+      articles: [],
+      responses: [],
+      feedItems: []
+    });
+  })
+});
 
 app.listen(process.env.PORT, () => console.log(`listening on port ${process.env.PORT}`));
 // let testUID;
@@ -124,17 +170,28 @@ app.post('/api/users', urlencodedParser, (req, res) => {
         if (err) {
           if (err.code === 11000) {
             message = "Email taken";
-          }// only email has unique constraint for users
+          } // only email has unique constraint for users
           res.status(400).end(message);
         } else {
-          res.status(200).json({username: newUser.username});
+          res.status(200).json({
+            id: newUser._id,
+            email: newUser.email,
+            blurb: newUser.blurb,
+            followers: [],
+            following: [],
+            articles: [],
+            responses: [],
+            feedItems: []
+          });
         }
       });
-    
+
   })
 });
 app.get('api/articles', urlencodedParser, (req, res) => {
-  models.Article
+  models.Article.find({}, (err, articles) => {
+    console.log(articles);
+  })
 })
 app.post('/api/stories', urlencodedParser, ensureAuthenticated, (req, res) => {
   // console.log(testUser);

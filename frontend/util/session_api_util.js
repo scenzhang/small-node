@@ -7,6 +7,13 @@ export function signup({email, password, name, blurb}) {
   });
 }
 
+export function fetchCurrentUser() {
+  return $.ajax({
+    method: 'get',
+    url: 'api/currUser'
+  });
+}
+
 export function login({email, password}) {
   return $.ajax({
     method: 'post',
