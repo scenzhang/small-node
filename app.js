@@ -208,23 +208,21 @@ app.post('/api/users', urlencodedParser, (req, res) => {
 });
 app.get('/api/articles', urlencodedParser, (req, res) => {
   models.Article.find({}, (err, articles) => {
-    console.log(articles);
     // articles.forEach((a) => console.log(a.toJSON()));
     res.json(articles);
   })
 });
 app.get('/api/articles/:articleID', urlencodedParser, (req, res) => {
   models.Article.findById(req.params.articleID, (err, article) => {
-    console.log(article);
+    console.log(article)
     res.json(article);
   });
 });
 
 app.post('/api/articles', urlencodedParser, ensureAuthenticated, (req, res) => {
-  console.log(req.body);
   let newArticle = new models.Article({
     title: req.body.title,
-    blurb: req.body.blurb || "",
+    description: req.body.blurb,
     body: req.body.body,
     authorId: req.session.passport.user,
     created: Date.now(),
@@ -233,8 +231,6 @@ app.post('/api/articles', urlencodedParser, ensureAuthenticated, (req, res) => {
   });
   newArticle.save((err) => {
     if (err) {
-      console.log(err);
-      console.log(newArticle);
       res.status(400).end("invalid field(s)");
     } else {
       res.status(200).json(newArticle);

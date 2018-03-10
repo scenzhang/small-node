@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 const extendSchema = require('mongoose-extend-schema');
 
-const baseSchema = new mongoose.Schema( {
+const baseSchema = new mongoose.Schema({
   created: Date,
   updated: Date
 });
 
-baseSchema.virtual('id').get(()=>{
+baseSchema.virtual('id').get(function () {
   return this._id;
 });
 
@@ -43,7 +43,7 @@ const storySchema = extendSchema(baseSchema, {
   },
   blurb: String,
   authorId: {
-    type: mongoose.Schema.Types.ObjectId, 
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
@@ -68,7 +68,7 @@ const articleSchema = extendSchema(baseSchema, {
     type: String,
     required: true
   },
-  blurb: String,
+  description: String,
   authorId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -81,19 +81,40 @@ const articleSchema = extendSchema(baseSchema, {
   // created: Date,
   // updated: Date,
 });
-const Article = mongoose.model('Article', articleSchema);
 
-const responseSchema = mongoose.Schema( {
+articleSchema.virtual('date').get(function () {
+  return this.updated;
+});
+const Article = mongoose.model('Article', articleSchema);
+articleSchema.virtual('time').get(function () {
+  return this.body.split(" ").length / 200; //avg person reads 200 wpm
+});
+articleSchema.virtual('blurb').get(function () {
+  return this.description || this.body.slice(0, 140);
+});
+articleSchema.virtual('realBlurb').get(function () {
+  return !!this.description;
+})
+
+const responseSchema = mongoose.Schema({
 
 });
 const Response = mongoose.model('Response', responseSchema);
 
-const followSchema = mongoose.Schema( {
+const followSchema = mongoose.Schema({
 
 });
 
 const Follows = mongoose.model('Follows', followSchema)
 
-userSchema.set('toJSON', {virtuals: true});
-articleSchema.set('toObject', {virtuals: true});
-module.exports = {  User, Story, Article };
+userSchema.set('toJSON', {
+  virtuals: true
+});
+articleSchema.set('toObject', {
+  virtuals: true
+});
+module.exports = {
+  User,
+  Story,
+  Article
+};

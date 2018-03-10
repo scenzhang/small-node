@@ -37,7 +37,7 @@ export const clearErrors = () => {
   return { type: CLEAR_ERRORS };
 }
 export const receiveCurrentUser = (currUser) => {
-  return { type: RECEIVE_CURRENT_USER, user: currUser };
+  return { type: RECEIVE_CURRENT_USER, user: currUser && currUser.id ? currUser : null };
 }
 
 export const receiveErrors = (errors) => {
