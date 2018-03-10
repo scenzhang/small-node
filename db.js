@@ -1,8 +1,22 @@
 const mongoose = require('mongoose');
+const extendSchema = require('mongoose-extend-schema');
+
+const baseSchema = new mongoose.Schema( {
+  created: Date,
+  updated: Date
+});
+
+baseSchema.virtual('id').get(()=>{
+  return this._id;
+});
+
+// baseSchema.set('toJSON', {virtuals: true});
+// baseSchema.set('toObject', {virtuals: true});
 
 
 
-const userSchema = new mongoose.Schema({
+
+const userSchema = extendSchema(baseSchema, {
   name: {
     type: String,
     required: true,
@@ -16,14 +30,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  sessionToken: String,
   blurb: String,
-  created: Date,
-  updated: Date
+  // created: Date,
+  // updated: Date
 });
 const User = mongoose.model('User', userSchema);
 
-const storySchema = new mongoose.Schema({
+const storySchema = extendSchema(baseSchema, {
   title: {
     type: String,
     required: true
@@ -38,8 +51,8 @@ const storySchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  created: Date,
-  updated: Date,
+  // created: Date,
+  // updated: Date,
   type: {
     type: String,
     enum: ['article', 'response'],
@@ -50,7 +63,7 @@ const storySchema = new mongoose.Schema({
 
 const Story = mongoose.model('Story', storySchema);
 
-const articleSchema = mongoose.Schema({
+const articleSchema = extendSchema(baseSchema, {
   title: {
     type: String,
     required: true
@@ -65,8 +78,8 @@ const articleSchema = mongoose.Schema({
     type: String,
     required: true
   },
-  created: Date,
-  updated: Date,
+  // created: Date,
+  // updated: Date,
 });
 const Article = mongoose.model('Article', articleSchema);
 
@@ -80,4 +93,7 @@ const followSchema = mongoose.Schema( {
 });
 
 const Follows = mongoose.model('Follows', followSchema)
+
+userSchema.set('toJSON', {virtuals: true});
+articleSchema.set('toObject', {virtuals: true});
 module.exports = {  User, Story, Article };

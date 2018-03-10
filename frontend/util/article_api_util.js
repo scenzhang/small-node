@@ -2,10 +2,10 @@ export const fetchArticles = () => $.ajax({url:'api/articles'});
 export const fetchArticle = id => $.ajax({
   url: `api/articles/${id}`
 });
-export const createArticle = article => $.ajax({
+export const createArticle = ({title, body, blurb}) => $.ajax({
   url: `api/articles`,
   method: 'post',
-  data: {article}
+  data: {title, body, blurb}
 });
 export const updateArticle = article => $.ajax({
   url: `api/articles/${article.id}`,

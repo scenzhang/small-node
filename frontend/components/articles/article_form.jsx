@@ -144,7 +144,7 @@ class ArticleForm extends Component {
 const mapStateToProps = (state, ownProps) => {
   return {
     errors: state.errors.articles,
-    currentUID: state.session.currentUser.id,
+    currentUID: state.session.currentUser ? state.session.currentUser.id : null,
     article: state.entities.articles[ownProps.match.params.id],
   };
 }

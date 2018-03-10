@@ -24,7 +24,7 @@ export function login({email, password}) {
 
 export function logout() {
   return $.ajax({
-    method: 'delete',
-    url: 'api/session'
+    method: 'get',
+    url: '/logout'
   })
 }

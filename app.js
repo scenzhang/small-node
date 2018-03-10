@@ -86,7 +86,7 @@ app.post('/login', urlencodedParser,
     failureRedirect: '/login'
   }),
   (req, res) => {
-    models.User.findById(req.user.id, (err, user) =>{
+    models.User.findById(req.user.id, (err, user) => {
       res.status(200).json({
         id: user._id,
         email: user.email,
@@ -116,7 +116,7 @@ app.get('/new', urlencodedParser, ensureAuthenticated, (req, res) => {
 })
 
 app.get('/api/users/:userID', urlencodedParser, (req, res) => {
-  models.User.findById(userID, (err, user) =>{
+  models.User.findById(userID, (err, user) => {
     res.status(200).json({
       id: user._id,
       email: user.email,
@@ -131,19 +131,37 @@ app.get('/api/users/:userID', urlencodedParser, (req, res) => {
   })
 })
 
-app.get('/api/currUser', urlencodedParser, ensureAuthenticated, (req, res) => {
-  models.User.findById(req.session.passport.user, (err, user) => {
-    res.status(200).json({
-      id: user._id,
-      email: user.email,
-      blurb: user.blurb,
-      followers: [],
-      following: [],
-      articles: [],
-      responses: [],
-      feedItems: []
-    });
-  })
+app.get('/api/currUser', urlencodedParser, (req, res) => {
+  const nullUser = {
+    id: null,
+    email: null,
+    blurb: null,
+    followers: [],
+    following: [],
+    articles: [],
+    responses: [],
+    feedItems: []
+  };
+  if (req.session.passport) {
+    models.User.findById(req.session.passport.user, (err, user) => {
+      if (user) {
+      res.status(200).json({
+        id: user._id,
+        email: user.email,
+        blurb: user.blurb,
+        followers: [],
+        following: [],
+        articles: [],
+        responses: [],
+        feedItems: []
+      });
+    } else {
+      res.status(200).json(nullUser)
+    }
+    })
+  } else {
+    res.json(nullUser);
+  }
 });
 
 app.listen(process.env.PORT, () => console.log(`listening on port ${process.env.PORT}`));
@@ -188,9 +206,40 @@ app.post('/api/users', urlencodedParser, (req, res) => {
 
   })
 });
-app.get('api/articles', urlencodedParser, (req, res) => {
+app.get('/api/articles', urlencodedParser, (req, res) => {
   models.Article.find({}, (err, articles) => {
     console.log(articles);
+    // articles.forEach((a) => console.log(a.toJSON()));
+    res.json(articles);
+  })
+});
+app.get('/api/articles/:articleID', urlencodedParser, (req, res) => {
+  models.Article.findById(req.params.articleID, (err, article) => {
+    console.log(article);
+    res.json(article);
+  });
+});
+
+app.post('/api/articles', urlencodedParser, ensureAuthenticated, (req, res) => {
+  console.log(req.body);
+  let newArticle = new models.Article({
+    title: req.body.title,
+    blurb: req.body.blurb || "",
+    body: req.body.body,
+    authorId: req.session.passport.user,
+    created: Date.now(),
+    updated: Date.now()
+
+  });
+  newArticle.save((err) => {
+    if (err) {
+      console.log(err);
+      console.log(newArticle);
+      res.status(400).end("invalid field(s)");
+    } else {
+      res.status(200).json(newArticle);
+    }
+
   })
 })
 app.post('/api/stories', urlencodedParser, ensureAuthenticated, (req, res) => {
