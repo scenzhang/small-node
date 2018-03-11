@@ -18,6 +18,7 @@ var webpack = require("webpack");
 module.exports = {
   context: __dirname,
   entry: "./frontend/small.jsx",
+  mode: "development",
   output: {
     path: path.resolve(__dirname, "public", "javascripts"),
     filename: "bundle.js",

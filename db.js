@@ -81,31 +81,57 @@ const articleSchema = extendSchema(baseSchema, {
   // created: Date,
   // updated: Date,
 });
-
+const readTime = (text) => {
+  return text.split(" ").length / 200; //avg person reads 200 wpm
+}
 articleSchema.virtual('date').get(function () {
   return this.updated;
 });
 const Article = mongoose.model('Article', articleSchema);
 articleSchema.virtual('time').get(function () {
-  return this.body.split(" ").length / 200; //avg person reads 200 wpm
+  return readTime(this.body);
 });
 articleSchema.virtual('blurb').get(function () {
   return this.description || this.body.slice(0, 140);
 });
 articleSchema.virtual('realBlurb').get(function () {
   return !!this.description;
-})
-
-const responseSchema = mongoose.Schema({
-
 });
+
+const responseSchema = extendSchema(baseSchema, {
+  authorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  parentResponseId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Response',
+  },
+  articleId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Article',
+    required: true
+  },
+  body: {
+    type: String, 
+    required: true
+  }
+});
+
+responseSchema.virtual('time').get(function() {
+  return readTime(this.body);
+});
+responseSchema.virtual('responses', { ref: 'Response', localField: '_id', foreignField: 'parentResponseId'});
+
 const Response = mongoose.model('Response', responseSchema);
 
-const followSchema = mongoose.Schema({
+articleSchema.virtual('responses', { ref: 'Response', localField: '_id', foreignField: 'articleId'})
+// const followSchema = mongoose.Schema({
 
-});
+// });
 
-const Follows = mongoose.model('Follows', followSchema)
+// const Follows = mongoose.model('Follows', followSchema)
 
 userSchema.set('toJSON', {
   virtuals: true
@@ -113,8 +139,12 @@ userSchema.set('toJSON', {
 articleSchema.set('toObject', {
   virtuals: true
 });
+responseSchema.set('toObject', {
+  virtuals: true
+});
 module.exports = {
   User,
   Story,
-  Article
+  Article,
+  Response
 };

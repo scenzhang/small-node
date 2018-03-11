@@ -213,7 +213,7 @@ app.get('/api/articles', urlencodedParser, (req, res) => {
   })
 });
 app.get('/api/articles/:articleID', urlencodedParser, (req, res) => {
-  models.Article.findById(req.params.articleID, (err, article) => {
+  models.Article.findById(req.params.articleID).populate('responses').exec((err, article) => {
     console.log(article)
     res.json(article);
   });
@@ -238,6 +238,32 @@ app.post('/api/articles', urlencodedParser, ensureAuthenticated, (req, res) => {
 
   })
 })
+
+app.post('/api/responses', urlencodedParser, ensureAuthenticated, (req, res) => {
+  console.log(req.body);
+  let newResponse = new models.Response({
+    authorId: req.session.passport.user,
+    created: Date.now(),
+    updated: Date.now(),
+    body: req.body.body,
+    articleId: req.body.articleId,
+    parentResponseId: req.body.parentResponseId
+  });
+  newResponse.save((err) => {
+    console.log(newResponse)
+    if (err) {
+      res.status(400).end("invalid field(s)");
+    } else {
+      res.status(200).json(newResponse);
+    }
+  })
+
+})
+app.get('/api/articles/:articleId/responses', urlencodedParser, (req, res) => {
+  models.Response.find({articleId: req.params.articleId}, (err, responses) => {
+
+  })
+});
 app.post('/api/stories', urlencodedParser, ensureAuthenticated, (req, res) => {
   // console.log(testUser);
   let newStory = new models.Story({
