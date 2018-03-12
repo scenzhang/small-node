@@ -4,6 +4,9 @@ import {
   REMOVE_RESPONSE,
 } from '../actions/response_actions';
 import {
+  RECEIVE_ARTICLE
+} from '../actions/article_actions';
+import {
   merge
 } from 'lodash';
 import { RECEIVE_USER } from '../actions/user_actions';
@@ -12,6 +15,13 @@ import { RECEIVE_USER } from '../actions/user_actions';
 const ResponsesReducer = (state = {}, action) => {
   const newState = merge({}, state);
   switch (action.type) {
+    case RECEIVE_ARTICLE:
+      {
+        action.article.responses.forEach((resp) => {
+          newState[resp.id] = resp;
+        });
+        return newState;
+      }
     case RECEIVE_RESPONSES:
       {
         action.responses.forEach((resp) => {

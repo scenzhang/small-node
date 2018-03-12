@@ -215,9 +215,15 @@ app.get('/api/articles', urlencodedParser, (req, res) => {
 app.get('/api/articles/:articleID', urlencodedParser, (req, res) => {
   models.Article.findById(req.params.articleID).populate('responses').exec((err, article) => {
     console.log(article)
-    res.json(article);
+    models.Response.find({articleId: article.id, parentResponseId: null}).exec((err, responses) => {
+      const responseList = responses.map((r) => r.id);
+      aObj = article.toObject();
+      aObj.response_ids = responseList;
+      res.json(aObj);
+    })
+    // res.json(article);
   });
-});
+}); 
 
 app.post('/api/articles', urlencodedParser, ensureAuthenticated, (req, res) => {
   let newArticle = new models.Article({
@@ -261,9 +267,21 @@ app.post('/api/responses', urlencodedParser, ensureAuthenticated, (req, res) => 
 })
 app.get('/api/articles/:articleId/responses', urlencodedParser, (req, res) => {
   models.Response.find({articleId: req.params.articleId}, (err, responses) => {
-
+    res.json(responses);
   })
 });
+app.get('/api/responses/:responseId', urlencodedParser, (req, res) => {
+  models.Response.findById(req.params.responseId, (err, response) => {
+    models.Response.find({parentResponseId: response.id}, (err, responses) =>{
+      const respList = responses.map((r) => r.id);
+      let rObj = response.toObject();
+      rObj.responseList = respList;
+
+      console.log(rObj);
+      res.json(rObj);
+    })
+  })
+})
 app.post('/api/stories', urlencodedParser, ensureAuthenticated, (req, res) => {
   // console.log(testUser);
   let newStory = new models.Story({
