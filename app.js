@@ -266,10 +266,26 @@ app.post('/api/responses', urlencodedParser, ensureAuthenticated, (req, res) => 
 
 })
 app.get('/api/articles/:articleId/responses', urlencodedParser, (req, res) => {
-  models.Response.find({articleId: req.params.articleId}, (err, responses) => {
-    res.json(responses);
-  })
-});
+  let rs = [];
+  models.Response.find({
+    articleId: req.params.articleId
+  }, (err, responses) => {
+    responses.forEach(r => {
+      console.log(responses.length);
+      models.Response.find({parentResponseId: r.id}, (err, replies) => {
+        // console.log(r);
+        // console.log("@@@@@@@@@")
+        let rObj = r.toObject();
+        rObj.response_ids = replies.map(resp=>resp.id);
+        rs.push(rObj);
+
+        if (rs.length === responses.length) { res.json(rs); }
+      })
+    })
+    
+    
+  });
+})
 app.get('/api/responses/:responseId', urlencodedParser, (req, res) => {
   models.Response.findById(req.params.responseId, (err, response) => {
     models.Response.find({parentResponseId: response.id}, (err, responses) =>{

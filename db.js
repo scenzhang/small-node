@@ -126,7 +126,9 @@ responseSchema.virtual('responses', { ref: 'Response', localField: '_id', foreig
 
 const Response = mongoose.model('Response', responseSchema);
 
+
 articleSchema.virtual('responses', { ref: 'Response', localField: '_id', foreignField: 'articleId'})
+
 // const followSchema = mongoose.Schema({
 
 // });

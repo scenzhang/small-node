@@ -60,7 +60,7 @@ const UIReducer = (state = {}, action) => {
         // if (res.parent_response_id === null)// || !newState.currResponses.includes(res.parent_response_id))
         //   newState.currResponses.push(res.id)
         // 
-        if (res.parent_response_id == newState.response_id) {
+        if (res.parentResponseId == newState.response_id) {
           newState.currResponses.push(res.id)
         }
       });
