@@ -208,13 +208,11 @@ app.post('/api/users', urlencodedParser, (req, res) => {
 });
 app.get('/api/articles', urlencodedParser, (req, res) => {
   models.Article.find({}, (err, articles) => {
-    // articles.forEach((a) => console.log(a.toJSON()));
     res.json(articles);
   })
 });
 app.get('/api/articles/:articleID', urlencodedParser, (req, res) => {
   models.Article.findById(req.params.articleID).populate('responses').exec((err, article) => {
-    console.log(article)
     models.Response.find({articleId: article.id, parentResponseId: null}).exec((err, responses) => {
       const responseList = responses.map((r) => r.id);
       aObj = article.toObject();
@@ -246,21 +244,22 @@ app.post('/api/articles', urlencodedParser, ensureAuthenticated, (req, res) => {
 })
 
 app.post('/api/responses', urlencodedParser, ensureAuthenticated, (req, res) => {
-  console.log(req.body);
   let newResponse = new models.Response({
     authorId: req.session.passport.user,
     created: Date.now(),
     updated: Date.now(),
     body: req.body.body,
     articleId: req.body.articleId,
-    parentResponseId: req.body.parentResponseId
+    parentResponseId: req.body.parentResponseId,
   });
   newResponse.save((err) => {
-    console.log(newResponse)
     if (err) {
       res.status(400).end("invalid field(s)");
     } else {
-      res.status(200).json(newResponse);
+      rObj = newResponse.toObject();
+      console.log(newResponse);
+      rObj.response_ids = [];
+      res.status(200).json(rObj);
     }
   })
 
@@ -271,7 +270,6 @@ app.get('/api/articles/:articleId/responses', urlencodedParser, (req, res) => {
     articleId: req.params.articleId
   }, (err, responses) => {
     responses.forEach(r => {
-      console.log(responses.length);
       models.Response.find({parentResponseId: r.id}, (err, replies) => {
         // console.log(r);
         // console.log("@@@@@@@@@")
@@ -293,11 +291,35 @@ app.get('/api/responses/:responseId', urlencodedParser, (req, res) => {
       let rObj = response.toObject();
       rObj.responseList = respList;
 
-      console.log(rObj);
       res.json(rObj);
     })
   })
 })
+
+function getImmediateChildren(response) {
+  model.Response.find({parentResponseId: response.id}, (err, replies) => {
+    let rObj = response.toObject();
+    rObj.response_ids = replies.map(resp=>resp.id);
+    return rObj;
+  })
+}
+
+
+app.get('/api/responses/:responseId/replies', urlencodedParser, (req, res) => {
+  console.log("replies route")
+  let rs = [];
+  models.Response.find({parentResponseId: req.params.responseId}, (err, responses) =>{
+    responses.forEach(r => {
+      models.Response.find({parentResponseId: r.id}, (err, replies) => {
+        let rObj = r.toObject();
+        rObj.response_ids = replies.map(resp=> resp.id);
+        rs.push(rObj);
+        if (rs.length === responses.length) { res.json(rs)};
+      })
+    })
+  })
+})
+
 app.post('/api/stories', urlencodedParser, ensureAuthenticated, (req, res) => {
   // console.log(testUser);
   let newStory = new models.Story({

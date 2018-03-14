@@ -122,6 +122,9 @@ const responseSchema = extendSchema(baseSchema, {
 responseSchema.virtual('time').get(function() {
   return readTime(this.body);
 });
+responseSchema.virtual('date').get(function() {
+  return this.updated;
+})
 responseSchema.virtual('responses', { ref: 'Response', localField: '_id', foreignField: 'parentResponseId'});
 
 const Response = mongoose.model('Response', responseSchema);
