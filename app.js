@@ -289,7 +289,7 @@ app.get('/api/responses/:responseId', urlencodedParser, (req, res) => {
     models.Response.find({parentResponseId: response.id}, (err, responses) =>{
       const respList = responses.map((r) => r.id);
       let rObj = response.toObject();
-      rObj.responseList = respList;
+      rObj.response_ids = respList;
 
       res.json(rObj);
     })
