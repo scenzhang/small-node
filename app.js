@@ -268,13 +268,16 @@ app.get('/api/articles/:articleId/responses', urlencodedParser, (req, res) => {
   let rs = [];
   models.Response.find({
     articleId: req.params.articleId
-  }, (err, responses) => {
+  }).populate("authorId").exec((err, responses) => {
     responses.forEach(r => {
       models.Response.find({parentResponseId: r.id}, (err, replies) => {
         // console.log(r);
         // console.log("@@@@@@@@@")
         let rObj = r.toObject();
         rObj.response_ids = replies.map(resp=>resp.id);
+        rObj.author = rObj.authorId.name;
+        delete rObj.authorId;
+        console.log(rObj);
         rs.push(rObj);
 
         if (rs.length === responses.length) { res.json(rs); }
