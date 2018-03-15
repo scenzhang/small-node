@@ -71,9 +71,9 @@ const UIReducer = (state = {}, action) => {
     case RECEIVE_RESPONSE:
       // 
       newState.response_loaded = true;
-      if (action.response.parent_response_id == newState.response_id) // || !newState.currResponses.includes(action.response.parent_response_id))
+      if (action.response.parentResponseId == newState.response_id) // || !newState.currResponses.includes(action.response.parent_response_id))
         newState.currResponses.push(action.response.id)
-      newState.currArticle = action.response.article_id
+      newState.currArticle = action.response.articleId
       newState.currResponses.sort((a, b) => a - b);
       // newState.response_id = null;
       return newState;

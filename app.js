@@ -31,7 +31,6 @@ passport.use(new Strategy(
       }
       bcrypt.compare(password, user.passwordDigest, (err, res) => {
         if (res) {
-          console.log(user)
           return done(null, {
             id: user._id,
             username: user.email
@@ -244,6 +243,7 @@ app.post('/api/articles', urlencodedParser, ensureAuthenticated, (req, res) => {
 })
 
 app.post('/api/responses', urlencodedParser, ensureAuthenticated, (req, res) => {
+  console.log(req.body)
   let newResponse = new models.Response({
     authorId: req.session.passport.user,
     created: Date.now(),
@@ -306,14 +306,17 @@ function getImmediateChildren(response) {
 
 
 app.get('/api/responses/:responseId/replies', urlencodedParser, (req, res) => {
-  console.log("replies route")
   let rs = [];
   models.Response.find({parentResponseId: req.params.responseId}, (err, responses) =>{
+    if (responses.length === 0) res.json([]);
     responses.forEach(r => {
       models.Response.find({parentResponseId: r.id}, (err, replies) => {
+        console.log(replies)
         let rObj = r.toObject();
         rObj.response_ids = replies.map(resp=> resp.id);
         rs.push(rObj);
+        console.log(rs.length)
+        console.log(responses.length)
         if (rs.length === responses.length) { res.json(rs)};
       })
     })
