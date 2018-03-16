@@ -25,6 +25,7 @@
     "lodash": "^4.17.5",
     "mongoose": "^5.0.7",
     "mongoose-extend-schema": "^1.0.0",
+    "mongoose-lean-virtuals": "^0.3.0",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
     "pug": "^2.0.0-rc.4",

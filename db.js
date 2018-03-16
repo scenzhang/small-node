@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
+const mongooseLeanVirtuals = require('mongoose-lean-virtuals');
+
 const extendSchema = require('mongoose-extend-schema');
 
 const baseSchema = new mongoose.Schema({
   created: Date,
   updated: Date
 });
-
 baseSchema.virtual('id').get(function () {
   return this._id;
 });
@@ -81,6 +82,8 @@ const articleSchema = extendSchema(baseSchema, {
   // created: Date,
   // updated: Date,
 });
+articleSchema.plugin(mongooseLeanVirtuals);
+
 const readTime = (text) => {
   return text.split(" ").length / 200; //avg person reads 200 wpm
 }
@@ -126,6 +129,7 @@ responseSchema.virtual('date').get(function() {
   return this.updated;
 })
 responseSchema.virtual('responses', { ref: 'Response', localField: '_id', foreignField: 'parentResponseId'});
+responseSchema.plugin(mongooseLeanVirtuals);
 
 const Response = mongoose.model('Response', responseSchema);
 

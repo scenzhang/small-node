@@ -20,7 +20,7 @@ function ArticlePreview({ article, url }) {
             <div className="article-blurb">{article.blurb}{article.realBlurb ? "" : "..."}</div>
           </Link>
           <div className="preview-bottom">
-            <Link to={`/users/${article.user_id}`} className="article-author">{article.author}</Link>
+            <Link to={`/users/${article.authorId}`} className="article-author">{article.author}</Link>
             <div className="details">
             <ArticleDateReadtime date={article.date} time={article.time} />
             

@@ -115,7 +115,7 @@ app.get('/new', urlencodedParser, ensureAuthenticated, (req, res) => {
 })
 
 app.get('/api/users/:userID', urlencodedParser, (req, res) => {
-  models.User.findById(userID, (err, user) => {
+  models.User.findById(req.params.userID, (err, user) => {
     res.status(200).json({
       id: user._id,
       email: user.email,
@@ -164,14 +164,7 @@ app.get('/api/currUser', urlencodedParser, (req, res) => {
 });
 
 app.listen(process.env.PORT, () => console.log(`listening on port ${process.env.PORT}`));
-// let testUID;
-// models.User.findOne({username: "asdfasdf"}, (err, user) => {
-//   console.log(user);
-//   testUID = user._id;
-// });
-// console.log(testUID);
 app.post('/api/users', urlencodedParser, (req, res) => {
-  // console.log(req.body)
   bcrypt.hash(req.body.password, 5, (err, hash) => {
     let newUser = new models.User({
       email: req.body.email,
@@ -206,7 +199,11 @@ app.post('/api/users', urlencodedParser, (req, res) => {
   })
 });
 app.get('/api/articles', urlencodedParser, (req, res) => {
-  models.Article.find({}, (err, articles) => {
+  models.Article.find().populate('authorId').lean({virtuals: true}).exec((err, articles) => {
+    articles.forEach((_, i, as) => {
+      as[i].author = as[i].authorId.name;
+      as[i].authorId = as[i].authorId._id;
+    });
     res.json(articles);
   })
 });
@@ -243,7 +240,6 @@ app.post('/api/articles', urlencodedParser, ensureAuthenticated, (req, res) => {
 })
 
 app.post('/api/responses', urlencodedParser, ensureAuthenticated, (req, res) => {
-  console.log(req.body)
   let newResponse = new models.Response({
     authorId: req.session.passport.user,
     created: Date.now(),
@@ -257,12 +253,36 @@ app.post('/api/responses', urlencodedParser, ensureAuthenticated, (req, res) => 
       res.status(400).end("invalid field(s)");
     } else {
       rObj = newResponse.toObject();
-      console.log(newResponse);
       rObj.response_ids = [];
       res.status(200).json(rObj);
     }
   })
 
+})
+app.get('/api/articles/:articleId/responsesTest', urlencodedParser, (req, res) => {
+  let rs = [];
+  models.Response.find({
+    articleId: req.params.articleId
+  }).lean({virtuals: true}).populate("authorId").then((responses) => {
+
+    responses.forEach((r, i, arr) => {
+      arr[i].author = arr[i].authorId.name;
+      arr[i].authorId = arr[i].authorId._id;
+      arr[i].response_ids = models.Response.find({parentResponseId: r.id}).lean({virtuals: true}).then( replies => {
+        console.log(replies.map(r=>r.id));
+        arr[i].response_ids = replies.map(r=>r.id);
+      })
+      // rs.push(models.Response.find({parentResponseId: r.id}).lean({virtuals: true}));
+
+    })
+    // console.log(responses.map(r => r.response_ids))
+    Promise.all(responses.map(r => r.response_ids)).then(_ => {
+      res.json(responses)
+    });
+    
+    
+  });
+  
 })
 app.get('/api/articles/:articleId/responses', urlencodedParser, (req, res) => {
   let rs = [];
@@ -271,13 +291,10 @@ app.get('/api/articles/:articleId/responses', urlencodedParser, (req, res) => {
   }).populate("authorId").exec((err, responses) => {
     responses.forEach(r => {
       models.Response.find({parentResponseId: r.id}, (err, replies) => {
-        // console.log(r);
-        // console.log("@@@@@@@@@")
         let rObj = r.toObject();
         rObj.response_ids = replies.map(resp=>resp.id);
         rObj.author = rObj.authorId.name;
         delete rObj.authorId;
-        console.log(rObj);
         rs.push(rObj);
 
         if (rs.length === responses.length) { res.json(rs); }
@@ -314,12 +331,9 @@ app.get('/api/responses/:responseId/replies', urlencodedParser, (req, res) => {
     if (responses.length === 0) res.json([]);
     responses.forEach(r => {
       models.Response.find({parentResponseId: r.id}, (err, replies) => {
-        console.log(replies)
         let rObj = r.toObject();
         rObj.response_ids = replies.map(resp=> resp.id);
         rs.push(rObj);
-        console.log(rs.length)
-        console.log(responses.length)
         if (rs.length === responses.length) { res.json(rs)};
       })
     })
@@ -327,7 +341,6 @@ app.get('/api/responses/:responseId/replies', urlencodedParser, (req, res) => {
 })
 
 app.post('/api/stories', urlencodedParser, ensureAuthenticated, (req, res) => {
-  // console.log(testUser);
   let newStory = new models.Story({
     title: req.body.title,
     blurb: req.body.blurb || "",
@@ -340,7 +353,6 @@ app.post('/api/stories', urlencodedParser, ensureAuthenticated, (req, res) => {
   newStory.save(
     (err) => {
       if (err) {
-        // console.log(err);
         res.status(400).end("invalid field(s)");
 
       } else {
@@ -365,10 +377,8 @@ app.put('/api/stories/:storyID', urlencodedParser, (req, res) => {
     "new": true
   }, (err, result) => {
     if (err || !result) {
-      console.log(err);
       res.status(400).end("failed to update");
     } else {
-      console.log(result);
       res.status(200).end(JSON.stringify(result));
     }
   });
