@@ -144,19 +144,19 @@ app.get('/api/currUser', urlencodedParser, (req, res) => {
   if (req.session.passport) {
     models.User.findById(req.session.passport.user, (err, user) => {
       if (user) {
-      res.status(200).json({
-        id: user._id,
-        email: user.email,
-        blurb: user.blurb,
-        followers: [],
-        following: [],
-        articles: [],
-        responses: [],
-        feedItems: []
-      });
-    } else {
-      res.status(200).json(nullUser)
-    }
+        res.status(200).json({
+          id: user._id,
+          email: user.email,
+          blurb: user.blurb,
+          followers: [],
+          following: [],
+          articles: [],
+          responses: [],
+          feedItems: []
+        });
+      } else {
+        res.status(200).json(nullUser)
+      }
     })
   } else {
     res.json(nullUser);
@@ -199,7 +199,9 @@ app.post('/api/users', urlencodedParser, (req, res) => {
   })
 });
 app.get('/api/articles', urlencodedParser, (req, res) => {
-  models.Article.find().populate('authorId').lean({virtuals: true}).exec((err, articles) => {
+  models.Article.find({}).populate('authorId').lean({
+    virtuals: true
+  }).exec((err, articles) => {
     articles.forEach((_, i, as) => {
       as[i].author = as[i].authorId.name;
       as[i].authorId = as[i].authorId._id;
@@ -207,9 +209,15 @@ app.get('/api/articles', urlencodedParser, (req, res) => {
     res.json(articles);
   })
 });
+
+
 app.get('/api/articles/:articleID', urlencodedParser, (req, res) => {
+
   models.Article.findById(req.params.articleID).populate('responses').exec((err, article) => {
-    models.Response.find({articleId: article.id, parentResponseId: null}).exec((err, responses) => {
+    models.Response.find({
+      articleId: article.id,
+      parentResponseId: null
+    }).exec((err, responses) => {
       const responseList = responses.map((r) => r.id);
       aObj = article.toObject();
       aObj.response_ids = responseList;
@@ -217,7 +225,7 @@ app.get('/api/articles/:articleID', urlencodedParser, (req, res) => {
     })
     // res.json(article);
   });
-}); 
+});
 
 app.post('/api/articles', urlencodedParser, ensureAuthenticated, (req, res) => {
   let newArticle = new models.Article({
@@ -263,26 +271,89 @@ app.get('/api/articles/:articleId/responsesTest', urlencodedParser, (req, res) =
   let rs = [];
   models.Response.find({
     articleId: req.params.articleId
-  }).lean({virtuals: true}).populate("authorId").then((responses) => {
+  }).lean({
+    virtuals: true
+  }).populate("authorId").then((responses) => {
 
     responses.forEach((r, i, arr) => {
       arr[i].author = arr[i].authorId.name;
       arr[i].authorId = arr[i].authorId._id;
-      arr[i].response_ids = models.Response.find({parentResponseId: r.id}).lean({virtuals: true}).then( replies => {
-        console.log(replies.map(r=>r.id));
-        arr[i].response_ids = replies.map(r=>r.id);
-      })
-      // rs.push(models.Response.find({parentResponseId: r.id}).lean({virtuals: true}));
+      arr[i].response_ids = models.Response.find({
+        parentResponseId: r.id
+      }).lean({
+        virtuals: true
+      }).then(replies => {
+        arr[i].response_ids = replies.map(r => r.id);
+      }) //assign a promise to response_ids that when fulfilled replaces response_ids with the actual list, to use with promise.all later
 
     })
-    // console.log(responses.map(r => r.response_ids))
+
     Promise.all(responses.map(r => r.response_ids)).then(_ => {
       res.json(responses)
     });
-    
-    
+
+
   });
-  
+
+})
+app.get('/api/articleTest/:articleId', urlencodedParser, (req, res) => {
+  models.Article.aggregate([
+    {
+      $match: {
+        _id: mongoose.Types.ObjectId(req.params.articleId)
+      }
+    },
+    {
+      $project: {
+        title: 1,
+        description: 1,
+        body: 1,
+        authorId: 1,
+        date: "$updated",
+        time: {$divide: [{$size: { $split: ["$body", " "]}}, 200]}
+      }
+    },
+    {
+      $lookup: {
+        from: "responses",
+        localField: "_id",
+        foreignField: "articleId",
+        as: "Responses"
+      }
+    }
+  ]).exec(function (err, result) {
+    if (err) {
+      return console.log(err);
+    } else {
+      return res.json(result);
+    }
+  })
+})
+app.get('/api/articles/:articleId/responseAgg', urlencodedParser, (req, res) => {
+  models.Response.aggregate(
+    [{$match: { articleId: mongoose.Types.ObjectId(req.params.articleId)} },
+    {
+      $lookup: {
+        from: "responses",
+        localField: "_id",
+        foreignField: "parentResponseId",
+        as: "response_ids"
+      }
+    },
+  {
+    $project: {
+      id: "$_id",
+      date: "$updated",
+      body: 1,
+      articleId: 1,
+        time: {$divide: [{$size: { $split: ["$body", " "]}}, 200]}
+      
+    }
+
+  }]
+    ).exec((err, result) =>{
+    return res.json(result);
+  })
 })
 app.get('/api/articles/:articleId/responses', urlencodedParser, (req, res) => {
   let rs = [];
@@ -290,23 +361,29 @@ app.get('/api/articles/:articleId/responses', urlencodedParser, (req, res) => {
     articleId: req.params.articleId
   }).populate("authorId").exec((err, responses) => {
     responses.forEach(r => {
-      models.Response.find({parentResponseId: r.id}, (err, replies) => {
+      models.Response.find({
+        parentResponseId: r.id
+      }, (err, replies) => {
         let rObj = r.toObject();
-        rObj.response_ids = replies.map(resp=>resp.id);
+        rObj.response_ids = replies.map(resp => resp.id);
         rObj.author = rObj.authorId.name;
         delete rObj.authorId;
         rs.push(rObj);
 
-        if (rs.length === responses.length) { res.json(rs); }
+        if (rs.length === responses.length) {
+          res.json(rs);
+        }
       })
     })
-    
-    
+
+
   });
 })
 app.get('/api/responses/:responseId', urlencodedParser, (req, res) => {
   models.Response.findById(req.params.responseId, (err, response) => {
-    models.Response.find({parentResponseId: response.id}, (err, responses) =>{
+    models.Response.find({
+      parentResponseId: response.id
+    }, (err, responses) => {
       const respList = responses.map((r) => r.id);
       let rObj = response.toObject();
       rObj.response_ids = respList;
@@ -317,9 +394,11 @@ app.get('/api/responses/:responseId', urlencodedParser, (req, res) => {
 })
 
 function getImmediateChildren(response) {
-  model.Response.find({parentResponseId: response.id}, (err, replies) => {
+  model.Response.find({
+    parentResponseId: response.id
+  }, (err, replies) => {
     let rObj = response.toObject();
-    rObj.response_ids = replies.map(resp=>resp.id);
+    rObj.response_ids = replies.map(resp => resp.id);
     return rObj;
   })
 }
@@ -327,14 +406,20 @@ function getImmediateChildren(response) {
 
 app.get('/api/responses/:responseId/replies', urlencodedParser, (req, res) => {
   let rs = [];
-  models.Response.find({parentResponseId: req.params.responseId}, (err, responses) =>{
+  models.Response.find({
+    parentResponseId: req.params.responseId
+  }, (err, responses) => {
     if (responses.length === 0) res.json([]);
     responses.forEach(r => {
-      models.Response.find({parentResponseId: r.id}, (err, replies) => {
+      models.Response.find({
+        parentResponseId: r.id
+      }, (err, replies) => {
         let rObj = r.toObject();
-        rObj.response_ids = replies.map(resp=> resp.id);
+        rObj.response_ids = replies.map(resp => resp.id);
         rs.push(rObj);
-        if (rs.length === responses.length) { res.json(rs)};
+        if (rs.length === responses.length) {
+          res.json(rs)
+        };
       })
     })
   })
