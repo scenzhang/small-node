@@ -38,7 +38,7 @@ const mapStateToProps = (state) => {
   let toDisplay = following === "ALL" ? Object.keys(state.entities.articles) : [];
   if (following != "ALL") {
     Object.values(state.entities.articles).forEach((article) => {
-      if (following.includes(article.user_id)) {
+      if (following.includes(article.authorId)) {
         toDisplay.push(article.id);
       }
     });

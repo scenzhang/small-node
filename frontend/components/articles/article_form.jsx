@@ -44,16 +44,16 @@ class ArticleForm extends Component {
       if (!article) { //need to fetch the item
         fetchArticle(id).then((res) => {
           if (res.article) {
-            this.setState({ title: res.article.title, blurb:res.article.blurb, body: res.article.body, author_id: res.article.user_id, id: res.article.id, blurbField: true });
+            this.setState({ title: res.article.title, blurb:res.article.blurb, body: res.article.body, author_id: res.article.authorId, id: res.article.id, blurbField: true });
           }
           if (res.response) {
-            this.setState({title: "Editing response", body: res.response.body, author_id: res.response.user_id, id: res.response.id});
+            this.setState({title: "Editing response", body: res.response.body, author_id: res.response.authorId, id: res.response.id});
           }
 
         });
       } else { //have the item in state
         this.setState({ title: this.props.match.url.includes("article") ? article.title : "Editing response",
-        body: article.body, author_id: article.user_id, blurb: this.props.match.url.includes("article") ? article.blurb : ""
+        body: article.body, author_id: article.authorId, blurb: this.props.match.url.includes("article") ? article.blurb : ""
       });
       }
     }

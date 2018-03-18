@@ -12,7 +12,7 @@ class _ResponseListItem extends Component {
       <li key={this.props.response.id} className={`level-${this.props.level}`} >
       <div className ="response">
           <DateReadtime date={this.props.response.date} time={this.props.response.time} />
-          <Link className="greentext" to={`/users/${this.props.response.user_id}`}>{this.props.response.author}</Link>
+          <Link className="greentext" to={`/users/${this.props.response.authorId}`}>{this.props.response.author}</Link>
         <Link to={`/responses/${this.props.response.id}`}>
           <div className="response-body serif">{this.props.response.body}</div>
           </Link>

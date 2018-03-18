@@ -60,7 +60,7 @@ class UserProfile extends Component {
                         date={response.date}
                         time={response.time}
                         id={response.id}
-                        author_url={`/users/${response.user_id}`}
+                        author_url={`/users/${response.authorId}`}
                         item_url={`/responses/${response.id}`}
                       />
                     )}
@@ -83,7 +83,7 @@ class UserProfile extends Component {
                         date={article.date}
                         time={article.time}
                         id={article.id}
-                        author_url={`/users/${article.user_id}`}
+                        author_url={`/users/${article.authorId}`}
                         item_url={`/articles/${article.id}`} />)}
                   </ul>
                 </div>
@@ -101,7 +101,7 @@ const mapStateToProps = (state, ownProps) => {
   let articles = [];
   if (state.entities.articles) {
     Object.values(state.entities.articles).forEach((article) => {
-      if (article.user_id == ownProps.match.params.id) {
+      if (article.authorId == ownProps.match.params.id) {
         articles.push(article);
       }
     });
@@ -109,7 +109,7 @@ const mapStateToProps = (state, ownProps) => {
   let responses = [];
   if (state.entities.responses) {
     Object.values(state.entities.responses).forEach((response) => {
-      if (response.user_id == ownProps.match.params.id) {
+      if (response.authorId == ownProps.match.params.id) {
         responses.push(response);
       }
     });

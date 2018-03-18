@@ -60,7 +60,7 @@ class Article extends Component {
       <div className="article-response-container">
         <div className="article-container">
           <div className="article-heading">
-            <UserAbout userId={article.user_id} link={true} />
+            <UserAbout userId={article.authorId} link={true} />
             <ArticleDateReadtime date={article.date} time={article.time} />
             {
               this.props.parentArticle && this.props.parentArticle.response_ids &&
@@ -85,7 +85,7 @@ class Article extends Component {
               </Link>
             }
             <h1> {article.title} </h1>
-            {this.props.currUID === this.props.article.user_id ? //only show dropdown if logged in as owner (change when bookmarks added)
+            {this.props.currUID === this.props.article.authorId ? //only show dropdown if logged in as owner (change when bookmarks added)
               <DropdownButton
                 className="dropdown-toggle"
                 opts={[<li key="edit"> <Link to={`${this.props.match.url}/edit`}>Edit</Link> </li>,
