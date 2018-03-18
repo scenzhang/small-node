@@ -297,8 +297,7 @@ app.get('/api/articles/:articleId/responsesTest', urlencodedParser, (req, res) =
 
 })
 app.get('/api/articleTest/:articleId', urlencodedParser, (req, res) => {
-  models.Article.aggregate([
-    {
+  models.Article.aggregate([{
       $match: {
         _id: mongoose.Types.ObjectId(req.params.articleId)
       }
@@ -310,7 +309,13 @@ app.get('/api/articleTest/:articleId', urlencodedParser, (req, res) => {
         body: 1,
         authorId: 1,
         date: "$updated",
-        time: {$divide: [{$size: { $split: ["$body", " "]}}, 200]}
+        time: {
+          $divide: [{
+            $size: {
+              $split: ["$body", " "]
+            }
+          }, 200]
+        }
       }
     },
     {
@@ -329,33 +334,59 @@ app.get('/api/articleTest/:articleId', urlencodedParser, (req, res) => {
     }
   })
 })
-app.get('/api/articles/:articleId/responseAgg', urlencodedParser, (req, res) => {
+app.get('/api/articles/:articleId/responses', urlencodedParser, (req, res) => {
   models.Response.aggregate(
-    [{$match: { articleId: mongoose.Types.ObjectId(req.params.articleId)} },
-    {
-      $lookup: {
-        from: "responses",
-        localField: "_id",
-        foreignField: "parentResponseId",
-        as: "response_ids"
-      }
-    },
-  {
-    $project: {
-      id: "$_id",
-      date: "$updated",
-      body: 1,
-      articleId: 1,
-        time: {$divide: [{$size: { $split: ["$body", " "]}}, 200]}
-      
-    }
+    [
+      {
+        $match: {
+          articleId: mongoose.Types.ObjectId(req.params.articleId)
+        }
+      },
+ 
+      {
+        $lookup: {
+          from: "responses",
+          localField: "_id",
+          foreignField: "parentResponseId",
+          as: "response_ids"
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "authorId",
+          foreignField: "_id",
+          as: "author"
+        }
+      },
+      {
+        $unwind: "$author"
+      },
+      {
+        $project: {
+          id: "$_id",
+          date: "$updated",
+          body: 1,
+          articleId: 1,
+          time: {
+            $divide: [{
+              $size: {
+                $split: ["$body", " "]
+              }
+            }, 200]
+          },
+          response_ids: "$response_ids._id",
+          author: "$author.name"
 
-  }]
-    ).exec((err, result) =>{
+        }
+
+      }
+    ]
+  ).exec((err, result) => {
     return res.json(result);
   })
 })
-app.get('/api/articles/:articleId/responses', urlencodedParser, (req, res) => {
+app.get('/api/articles/:articleId/responsesOld', urlencodedParser, (req, res) => {
   let rs = [];
   models.Response.find({
     articleId: req.params.articleId
