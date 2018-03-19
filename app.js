@@ -479,7 +479,20 @@ app.get('/api/old/responses/:responseId', urlencodedParser, (req, res) => {
     })
   })
 })
-
+app.patch('/api/articles/:articleId', urlencodedParser, (req, res) => {
+  console.log(req.body);
+  models.Article.findByIdAndUpdate(mongoose.Types.ObjectId(req.params.articleId), {$set: req.body}, {new: true}, (err, doc) =>{ 
+    console.log(doc);
+    res.json(doc);
+  })
+})
+app.patch('/api/responses/:responseId', urlencodedParser, (req, res) => {
+  console.log(req.body);
+  models.Response.findByIdAndUpdate(mongoose.Types.ObjectId(req.params.responseId), {$set: req.body}, {new: true}, (err, doc) =>{ 
+    console.log(doc);
+    res.json(doc);
+  })
+})
 
 
 app.get('/api/responses/:responseId/replies', urlencodedParser, (req, res) => {

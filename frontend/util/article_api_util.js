@@ -7,10 +7,10 @@ export const createArticle = ({title, body, blurb}) => $.ajax({
   method: 'post',
   data: {title, body, blurb}
 });
-export const updateArticle = article => $.ajax({
-  url: `api/articles/${article.id}`,
+export const updateArticle = ({id, title, body, blurb}) => $.ajax({
+  url: `api/articles/${id}`,
   method: 'patch',
-  data: {article}
+  data: {title, body, description: blurb}
 });
 export const deleteArticle = id => $.ajax({
   url: `api/articles/${id}`,
