@@ -131,6 +131,44 @@ app.get('/api/users/:userID', urlencodedParser, (req, res) => {
   })
 })
 
+app.get('/dev/users/:userId', urlencodedParser, (req, res) => {
+  models.User.aggregate([{
+      $match: {
+        _id: mongoose.Types.ObjectId(req.params.userId)
+      }
+    },
+    {
+      $lookup: {
+        from: "articles",
+        localField: "_id",
+        foreignField: "authorId",
+        as: "articles"
+      }
+    },
+    {
+      $lookup: {
+        from: "responses",
+        localField: "_id",
+        foreignField: "authorId",
+        as: "responses"
+      }
+    },
+    {
+      $project: {
+        id: "$_id",
+        name: 1,
+        email: 1,
+        blurb: 1,
+        followers: [],
+        articles: 1,
+        responses: 1
+      }
+    }
+  ]).exec((err, result) => {
+    res.json(result);
+  })
+})
+
 app.get('/api/currUser', urlencodedParser, (req, res) => {
   const nullUser = {
     id: null,
@@ -212,21 +250,21 @@ app.get('/api/articles', urlencodedParser, (req, res) => {
 });
 
 
-app.get('/api/articles/:articleID', urlencodedParser, (req, res) => {
+// app.get('/api/articles/:articleID', urlencodedParser, (req, res) => {
 
-  models.Article.findById(req.params.articleID).populate('responses').exec((err, article) => {
-    models.Response.find({
-      articleId: article.id,
-      parentResponseId: null
-    }).exec((err, responses) => {
-      const responseList = responses.map((r) => r.id);
-      aObj = article.toObject();
-      aObj.response_ids = responseList;
-      res.json(aObj);
-    })
-    // res.json(article);
-  });
-});
+//   models.Article.findById(req.params.articleID).populate('responses').exec((err, article) => {
+//     models.Response.find({
+//       articleId: article.id,
+//       parentResponseId: null
+//     }).exec((err, responses) => {
+//       const responseList = responses.map((r) => r.id);
+//       aObj = article.toObject();
+//       aObj.response_ids = responseList;
+//       res.json(aObj);
+//     })
+//     // res.json(article);
+//   });
+// });
 
 app.post('/api/articles', urlencodedParser, ensureAuthenticated, (req, res) => {
   let newArticle = new models.Article({
@@ -297,14 +335,92 @@ app.get('/api/articles/:articleId/responsesTest', urlencodedParser, (req, res) =
   });
 
 })
-app.get('/api/articleTest/:articleId', urlencodedParser, (req, res) => {
-  models.Article.aggregate([{
-      $match: {
-        _id: mongoose.Types.ObjectId(req.params.articleId)
+app.get('/api/articles/:articleId', urlencodedParser, (req, res) => {
+  getArticles({
+    _id: mongoose.Types.ObjectId(req.params.articleId)
+  }).exec(function (err, result) {
+    if (err) {
+      return console.log(err);
+    } else {
+      return res.json(result[0]);
+    }
+  })
+})
+
+function getResponses(param) {
+  return models.Response.aggregate([{
+      $match: param
+    },
+    {
+      $lookup: {
+        from: "responses",
+        localField: "_id",
+        foreignField: "parentResponseId",
+        as: "response_ids"
       }
     },
     {
+      $lookup: {
+        from: "users",
+        localField: "authorId",
+        foreignField: "_id",
+        as: "author"
+      }
+    },
+    {
+      $unwind: "$author"
+    },
+    {
       $project: {
+        id: "$_id",
+        date: "$updated",
+        body: 1,
+        articleId: 1,
+        authorId: 1,
+        parentResponseId: 1,
+        time: {
+          $divide: [{
+            $size: {
+              $split: ["$body", " "]
+            }
+          }, 200]
+        },
+        response_ids: "$response_ids._id",
+        author: "$author.name"
+
+      }
+
+    }
+  ])
+}
+
+function getArticles(param) {
+  return models.Article.aggregate([{
+      $match: param
+    },
+
+    {
+      $lookup: {
+        from: "responses",
+        localField: "_id",
+        foreignField: "articleId",
+        as: "response_ids"
+      }
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "authorId",
+        foreignField: "_id",
+        as: "author"
+      }
+    },
+    {
+      $unwind: "$author"
+    },
+    {
+      $project: {
+        id: "$_id",
         title: 1,
         description: 1,
         body: 1,
@@ -316,74 +432,18 @@ app.get('/api/articleTest/:articleId', urlencodedParser, (req, res) => {
               $split: ["$body", " "]
             }
           }, 200]
-        }
-      }
-    },
-    {
-      $lookup: {
-        from: "responses",
-        localField: "_id",
-        foreignField: "articleId",
-        as: "Responses"
+        },
+        response_ids: "$response_ids._id",
+        author: "$author.name"
       }
     }
-  ]).exec(function (err, result) {
-    if (err) {
-      return console.log(err);
-    } else {
-      return res.json(result);
-    }
-  })
-})
+  ])
+}
 app.get('/api/articles/:articleId/responses', urlencodedParser, (req, res) => {
-  models.Response.aggregate(
-    [
-      {
-        $match: {
-          articleId: mongoose.Types.ObjectId(req.params.articleId)
-        }
-      },
- 
-      {
-        $lookup: {
-          from: "responses",
-          localField: "_id",
-          foreignField: "parentResponseId",
-          as: "response_ids"
-        }
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "authorId",
-          foreignField: "_id",
-          as: "author"
-        }
-      },
-      {
-        $unwind: "$author"
-      },
-      {
-        $project: {
-          id: "$_id",
-          date: "$updated",
-          body: 1,
-          articleId: 1,
-          time: {
-            $divide: [{
-              $size: {
-                $split: ["$body", " "]
-              }
-            }, 200]
-          },
-          response_ids: "$response_ids._id",
-          author: "$author.name"
-
-        }
-
-      }
-    ]
-  ).exec((err, result) => {
+  getResponses({
+    articleId: mongoose.Types.ObjectId(req.params.articleId)
+  })
+  .exec((err, result) => {
     return res.json(result);
   })
 })
@@ -413,56 +473,9 @@ app.get('/api/articles/:articleId/responsesOld', urlencodedParser, (req, res) =>
 })
 
 app.get('/api/responses/:responseId', urlencodedParser, (req, res) => {
-  models.Response.aggregate([
-    {
-      $match: {
-        _id: mongoose.Types.ObjectId(req.params.responseId)
-      }
-    },
-    {
-      $lookup: {
-        from: "responses",
-        localField: "_id",
-        foreignField: "parentResponseId",
-        as: "response_ids"
-      }
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "authorId",
-        foreignField: "_id",
-        as: "author"
-      }
-    },
-    {
-      $unwind: "$author"
-    },
-    {
-      $project: {
-        id: "$_id",
-          date: "$updated",
-          body: 1,
-          articleId: 1,
-          authorId: 1,
-          parentResponseId: 1,
-          time: {
-            $divide: [{
-              $size: {
-                $split: ["$body", " "]
-              }
-            }, 200]
-          },
-          response_ids: "$response_ids._id",
-          author: "$author.name"
-      }
-    }
-
-    // {
-
-    // }
-
-  ]).exec((err, result) => {
+  getResponses({
+    _id: mongoose.Types.ObjectId(req.params.responseId)
+  }).exec((err, result) => {
     return res.json(result[0]);
   })
 })
@@ -481,14 +494,22 @@ app.get('/api/old/responses/:responseId', urlencodedParser, (req, res) => {
 })
 app.patch('/api/articles/:articleId', urlencodedParser, (req, res) => {
   console.log(req.body);
-  models.Article.findByIdAndUpdate(mongoose.Types.ObjectId(req.params.articleId), {$set: req.body}, {new: true}, (err, doc) =>{ 
+  models.Article.findByIdAndUpdate(mongoose.Types.ObjectId(req.params.articleId), {
+    $set: req.body
+  }, {
+    new: true
+  }, (err, doc) => {
     console.log(doc);
     res.json(doc);
   })
 })
 app.patch('/api/responses/:responseId', urlencodedParser, (req, res) => {
   console.log(req.body);
-  models.Response.findByIdAndUpdate(mongoose.Types.ObjectId(req.params.responseId), {$set: req.body}, {new: true}, (err, doc) =>{ 
+  models.Response.findByIdAndUpdate(mongoose.Types.ObjectId(req.params.responseId), {
+    $set: req.body
+  }, {
+    new: true
+  }, (err, doc) => {
     console.log(doc);
     res.json(doc);
   })
@@ -496,50 +517,10 @@ app.patch('/api/responses/:responseId', urlencodedParser, (req, res) => {
 
 
 app.get('/api/responses/:responseId/replies', urlencodedParser, (req, res) => {
-  models.Response.aggregate([
-    {$match: {
-      parentResponseId: mongoose.Types.ObjectId(req.params.responseId)
-    }}, 
-    {
-      $lookup: {
-        from: "responses",
-        localField: "_id",
-        foreignField: "parentResponseId",
-        as: "response_ids"
-
-      }
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "authorId",
-        foreignField: "_id",
-        as: "author"
-      }
-    },
-    {
-      $unwind: "$author"
-    },
-    {
-      $project: {
-        id: "$_id",
-          date: "$updated",
-          body: 1,
-          articleId: 1,
-          authorId: 1,
-          parentResponseId: 1,
-          time: {
-            $divide: [{
-              $size: {
-                $split: ["$body", " "]
-              }
-            }, 200]
-          },
-          response_ids: "$response_ids._id",
-          author: "$author.name"
-      }
-    }
-  ]).exec((err, result) =>{
+  getResponses({
+    parentResponseId: mongoose.Types.ObjectId(req.params.responseId)
+  })
+  .exec((err, result) => {
     if (err) {
       console.log(err);
     } else {
