@@ -114,59 +114,23 @@ app.get('/new', urlencodedParser, ensureAuthenticated, (req, res) => {
   res.end(`new post by ${req.user.username}`);
 })
 
-app.get('/api/users/:userID', urlencodedParser, (req, res) => {
-  models.User.findById(req.params.userID, (err, user) => {
-    res.status(200).json({
-      name: user.name,
-      id: user._id,
-      email: user.email,
-      blurb: user.blurb,
-      followers: [],
-      following: [],
-      articles: [],
-      responses: [],
-      feedItems: []
-    });
+function getUser(id) {
+  return models.User.findById(id).select({ email: 1, blurb: 1, name: 1}).lean();
+}
 
-  })
-})
 
-app.get('/dev/users/:userId', urlencodedParser, (req, res) => {
-  models.User.aggregate([{
-      $match: {
-        _id: mongoose.Types.ObjectId(req.params.userId)
-      }
-    },
-    {
-      $lookup: {
-        from: "articles",
-        localField: "_id",
-        foreignField: "authorId",
-        as: "articles"
-      }
-    },
-    {
-      $lookup: {
-        from: "responses",
-        localField: "_id",
-        foreignField: "authorId",
-        as: "responses"
-      }
-    },
-    {
-      $project: {
-        id: "$_id",
-        name: 1,
-        email: 1,
-        blurb: 1,
-        followers: [],
-        articles: 1,
-        responses: 1
-      }
-    }
-  ]).exec((err, result) => {
-    res.json(result);
-  })
+app.get('/api/users/:userId', urlencodedParser, (req, res) => {
+  const uid = mongoose.Types.ObjectId(req.params.userId);
+  Promise.all([getUser(uid), getArticles({authorId: uid}), getResponses({authorId: uid})]).then(vals =>{
+    u = vals[0];
+    u.id = u._id;
+    u.articles = vals[1];
+    u.responses = vals[2];
+    u.followers = [];
+    u.following = [];
+    res.json(u);
+  });
+ 
 })
 
 app.get('/api/currUser', urlencodedParser, (req, res) => {
@@ -441,11 +405,11 @@ function getArticles(param) {
 }
 app.get('/api/articles/:articleId/responses', urlencodedParser, (req, res) => {
   getResponses({
-    articleId: mongoose.Types.ObjectId(req.params.articleId)
-  })
-  .exec((err, result) => {
-    return res.json(result);
-  })
+      articleId: mongoose.Types.ObjectId(req.params.articleId)
+    })
+    .exec((err, result) => {
+      return res.json(result);
+    })
 })
 app.get('/api/articles/:articleId/responsesOld', urlencodedParser, (req, res) => {
   let rs = [];
@@ -518,15 +482,15 @@ app.patch('/api/responses/:responseId', urlencodedParser, (req, res) => {
 
 app.get('/api/responses/:responseId/replies', urlencodedParser, (req, res) => {
   getResponses({
-    parentResponseId: mongoose.Types.ObjectId(req.params.responseId)
-  })
-  .exec((err, result) => {
-    if (err) {
-      console.log(err);
-    } else {
-      res.json(result);
-    }
-  })
+      parentResponseId: mongoose.Types.ObjectId(req.params.responseId)
+    })
+    .exec((err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.json(result);
+      }
+    })
 })
 app.get('/api/old/responses/:responseId/replies', urlencodedParser, (req, res) => {
   let rs = [];
