@@ -118,16 +118,23 @@ function getUser(id) {
   return models.User.findById(id).select({ email: 1, blurb: 1, name: 1}).lean();
 }
 
+function getFollows(followerId) {
+  return models.Follow.find({followerId});
+}
+
+function getFollowers(followedId) {
+  return models.Follow.find({followedId});
+}
 
 app.get('/api/users/:userId', urlencodedParser, (req, res) => {
   const uid = mongoose.Types.ObjectId(req.params.userId);
-  Promise.all([getUser(uid), getArticles({authorId: uid}), getResponses({authorId: uid})]).then(vals =>{
+  Promise.all([getUser(uid), getArticles({authorId: uid}), getResponses({authorId: uid}), getFollows(uid), getFollowers(uid)]).then(vals =>{
     u = vals[0];
     u.id = u._id;
     u.articles = vals[1];
     u.responses = vals[2];
-    u.followers = [];
-    u.following = [];
+    u.following = vals[3].map(f => f.followedId);
+    u.followers = vals[4].map(f => f.followerId);
     res.json(u);
   });
  
@@ -479,7 +486,24 @@ app.patch('/api/responses/:responseId', urlencodedParser, (req, res) => {
   })
 })
 
+app.get('/api/follows', urlencodedParser, (req, res) => {
+  console.log(req.query);
+});
 
+app.post('/api/follows', urlencodedParser, (req, res) => {
+  console.log(req.body);
+  let newFollow = new models.Follow({
+    followerId: req.body.followerId,
+    followedId: req.body.followedId
+  });
+  newFollow.save((err)=>{
+    if (err) {
+      res.status(400)
+    } else {
+      res.json(newFollow);
+    }
+  })
+});
 app.get('/api/responses/:responseId/replies', urlencodedParser, (req, res) => {
   getResponses({
       parentResponseId: mongoose.Types.ObjectId(req.params.responseId)

@@ -17,16 +17,10 @@ const followsReducer = (state = {}, action) => {
   switch (action.type) {
     case RECEIVE_FOLLOW:
       {
-        if (!newState[action.follow.follower_id]) {
-          newState[action.follow.follower_id] = {};
+        if (!newState[action.follow.followerId]) {
+          newState[action.follow.followerId] = [];
         }
-        let thisUserFollows = newState[action.follow.follower_id];
-        if (!thisUserFollows[action.follow.followable_type]) {
-          thisUserFollows[action.follow.followable_type] = [];
-        }
-        if (!thisUserFollows[action.follow.followable_type].includes(action.follow.followable_id)) {
-          thisUserFollows[action.follow.followable_type].push(action.follow.followable_id);
-        }
+        newState[action.follow.followerId].push(action.follow.followedId);
         return newState;
       }
     case REMOVE_FOLLOW:
@@ -41,29 +35,18 @@ const followsReducer = (state = {}, action) => {
         
     case RECEIVE_USER: //when we receive a user also populate his followers/follows
       {
-        action.user.followers.forEach((followerId) => {
+        action.user.followers.forEach((followerId) => { //populate state for each of user's followers
           if (!newState[followerId]) {
-            newState[followerId] = {};
+            newState[followerId] = new Set;
           }
-          let thisUserFollows = newState[followerId];
-          if (!thisUserFollows.User) {
-            thisUserFollows.User = [];
-          }
-          if (!thisUserFollows.User.includes(action.user.id)) {
-            thisUserFollows.User.push(action.user.id);
-          }
+          newState[followerId].add(action.user.id); 
         });
-        action.user.following.forEach((followeeId) => {
+        action.user.following.forEach((followeeId) => { //populate state for each of user's followed users
           if (!newState[action.user.id]) {
-            newState[action.user.id] = {};
+            newState[action.user.id] = new Set;
           }
-          let thisUserFollows = newState[action.user.id];
-          if (!thisUserFollows.User) {
-            thisUserFollows.User = [];
-          }
-          if (!thisUserFollows.User.includes(followeeId)) {
-            thisUserFollows.User.push(followeeId);
-          }
+          newState[action.user.id].add(followeeId);
+        
         });
         return newState;
       }

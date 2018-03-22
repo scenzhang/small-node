@@ -9,13 +9,13 @@ export const receiveFollow = (follow) => ({
   follow
 });
 
-export const getFollow = (follower_id, followable_id, followable_type = "User") => dispatch => {
-  return FollowUtil.getFollow(follower_id, followable_id, followable_type = "User")
+export const getFollow = (followerId, followableId) => dispatch => {
+  return FollowUtil.getFollow(followerId, followableId)
     .then((follow => dispatch(receiveFollow(follow))));
 };
 
-export const createFollow = (follower_id, followable_id, followable_type = "User") => dispatch => {
-  return FollowUtil.createFollow(follower_id, followable_id, followable_type)
+export const createFollow = (followerId, followableId) => dispatch => {
+  return FollowUtil.createFollow(followerId, followableId)
     .then((follow) => dispatch(receiveFollow(follow)));
 };
 
@@ -24,7 +24,7 @@ export const removeFollow = (follow) => ({
   follow
 });
 
-export const deleteFollow = (follower_id, followable_id, followable_type = "User") => dispatch => {
-  return FollowUtil.deleteFollow(follower_id, followable_id, followable_type)
+export const deleteFollow = (followerId, followableId) => dispatch => {
+  return FollowUtil.deleteFollow(followerId, followableId)
     .then((follow) => dispatch(removeFollow(follow)));
 };

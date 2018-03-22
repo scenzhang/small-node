@@ -34,11 +34,11 @@ class ArticleIndex extends Component {
 
 const mapStateToProps = (state) => {
   let following = state.session.currentUser && state.entities.follows[state.session.currentUser.id] ? 
-    state.entities.follows[state.session.currentUser.id].User : "ALL"
+    state.entities.follows[state.session.currentUser.id] : "ALL"
   let toDisplay = following === "ALL" ? Object.keys(state.entities.articles) : [];
   if (following != "ALL") {
     Object.values(state.entities.articles).forEach((article) => {
-      if (following.includes(article.authorId)) {
+      if (following.has(article.authorId)) {
         toDisplay.push(article.id);
       }
     });

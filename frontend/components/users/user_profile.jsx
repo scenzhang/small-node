@@ -40,8 +40,7 @@ class UserProfile extends Component {
                   <div className="response-header">Following</div>
                   <ul>
                     {this.props.user && this.props.follows[this.props.user.id] &&
-                      this.props.follows[this.props.user.id].User
-                        .map(followingId => <UserAbout link={true} className="following-about" userId={followingId} />)
+                      Array.from(this.props.follows[this.props.user.id]).map(followingId => <UserAbout link={true} className="following-about" userId={followingId} />)
                     }
                   </ul>
                 </div>

@@ -136,11 +136,20 @@ const Response = mongoose.model('Response', responseSchema);
 
 articleSchema.virtual('responses', { ref: 'Response', localField: '_id', foreignField: 'articleId'})
 
-// const followSchema = mongoose.Schema({
+const followSchema = extendSchema(baseSchema, {
+  followerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  followedId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  }
+})
 
-// });
-
-// const Follows = mongoose.model('Follows', followSchema)
+const Follow = mongoose.model('Follows', followSchema)
 
 userSchema.set('toJSON', {
   virtuals: true
@@ -155,5 +164,6 @@ module.exports = {
   User,
   Story,
   Article,
-  Response
+  Response,
+  Follow
 };

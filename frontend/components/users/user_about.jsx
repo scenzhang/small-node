@@ -50,7 +50,7 @@ const mapStateToProps = (state, ownProps) => {
   let user = ownProps.user || state.entities.users[ownProps.userId];
   // 
   let following = state.session.currentUser && user && state.entities.follows[state.session.currentUser.id] &&
-    state.entities.follows[state.session.currentUser.id].User.includes(user.id);
+    state.entities.follows[state.session.currentUser.id].has(user.id);
 
   return {
     user,
