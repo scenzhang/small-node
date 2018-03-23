@@ -18,35 +18,35 @@ const followsReducer = (state = {}, action) => {
     case RECEIVE_FOLLOW:
       {
         if (!newState[action.follow.followerId]) {
-          newState[action.follow.followerId] = [];
+          newState[action.follow.followerId] = new Set;
         }
-        newState[action.follow.followerId].push(action.follow.followedId);
+        newState[action.follow.followerId].add(action.follow.followedId);
         return newState;
       }
     case REMOVE_FOLLOW:
       {
-        remove(newState[action.follow.follower_id][action.follow.followable_type], (n) => n === action.follow.followable_id);
+        newState[action.follow.followerId].delete(action.follow.followedId);
         // 
         return newState;
       }
     case RECEIVE_CURRENT_USER:
-    // 
+      // 
       if (!action.user) return state;
-        
+
     case RECEIVE_USER: //when we receive a user also populate his followers/follows
       {
         action.user.followers.forEach((followerId) => { //populate state for each of user's followers
           if (!newState[followerId]) {
             newState[followerId] = new Set;
           }
-          newState[followerId].add(action.user.id); 
+          newState[followerId].add(action.user.id);
         });
         action.user.following.forEach((followeeId) => { //populate state for each of user's followed users
           if (!newState[action.user.id]) {
             newState[action.user.id] = new Set;
           }
           newState[action.user.id].add(followeeId);
-        
+
         });
         return newState;
       }

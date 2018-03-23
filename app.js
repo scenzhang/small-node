@@ -115,29 +115,54 @@ app.get('/new', urlencodedParser, ensureAuthenticated, (req, res) => {
 })
 
 function getUser(id) {
-  return models.User.findById(id).select({ email: 1, blurb: 1, name: 1}).lean();
+  return models.User.findById(id).select({
+    email: 1,
+    blurb: 1,
+    name: 1
+  }).lean();
 }
 
 function getFollows(followerId) {
-  return models.Follow.find({followerId});
+  return models.Follow.find({
+    followerId
+  });
 }
 
 function getFollowers(followedId) {
-  return models.Follow.find({followedId});
+  return models.Follow.find({
+    followedId
+  });
 }
 
-app.get('/api/users/:userId', urlencodedParser, (req, res) => {
-  const uid = mongoose.Types.ObjectId(req.params.userId);
-  Promise.all([getUser(uid), getArticles({authorId: uid}), getResponses({authorId: uid}), getFollows(uid), getFollowers(uid)]).then(vals =>{
+function buildUser(uid) {
+  return Promise.all([getUser(uid), getArticles({
+    authorId: uid
+  }), getResponses({
+    authorId: uid
+  }), getFollows(uid), getFollowers(uid)])
+  .then(vals => {
     u = vals[0];
     u.id = u._id;
     u.articles = vals[1];
     u.responses = vals[2];
     u.following = vals[3].map(f => f.followedId);
     u.followers = vals[4].map(f => f.followerId);
-    res.json(u);
-  });
- 
+    return Promise.all([u, getArticles({ authorId: { $in: u.following }})]);
+  }).then(results => {
+    results[0].feedItems = results[1].map(a => a._id);
+    return results[0];
+
+  })
+  .catch(console.log.bind(console));  // just catch everything here
+  ;
+
+
+};
+
+app.get('/api/users/:userId', urlencodedParser, (req, res) => {
+  const uid = mongoose.Types.ObjectId(req.params.userId);
+  buildUser(uid).then(u => res.json(u)).catch(console.log.bind(console));
+  ;
 })
 
 app.get('/api/currUser', urlencodedParser, (req, res) => {
@@ -277,35 +302,7 @@ app.post('/api/responses', urlencodedParser, ensureAuthenticated, (req, res) => 
   })
 
 })
-app.get('/api/articles/:articleId/responsesTest', urlencodedParser, (req, res) => {
-  let rs = [];
-  models.Response.find({
-    articleId: req.params.articleId
-  }).lean({
-    virtuals: true
-  }).populate("authorId").then((responses) => {
 
-    responses.forEach((r, i, arr) => {
-      arr[i].author = arr[i].authorId.name;
-      arr[i].authorId = arr[i].authorId._id;
-      arr[i].response_ids = models.Response.find({
-        parentResponseId: r.id
-      }).lean({
-        virtuals: true
-      }).then(replies => {
-        arr[i].response_ids = replies.map(r => r.id);
-      }) //assign a promise to response_ids that when fulfilled replaces response_ids with the actual list, to use with promise.all later
-
-    })
-
-    Promise.all(responses.map(r => r.response_ids)).then(_ => {
-      res.json(responses)
-    });
-
-
-  });
-
-})
 app.get('/api/articles/:articleId', urlencodedParser, (req, res) => {
   getArticles({
     _id: mongoose.Types.ObjectId(req.params.articleId)
@@ -496,7 +493,7 @@ app.post('/api/follows', urlencodedParser, (req, res) => {
     followerId: req.body.followerId,
     followedId: req.body.followedId
   });
-  newFollow.save((err)=>{
+  newFollow.save((err) => {
     if (err) {
       res.status(400)
     } else {
@@ -504,6 +501,29 @@ app.post('/api/follows', urlencodedParser, (req, res) => {
     }
   })
 });
+
+app.delete('/api/follows', urlencodedParser, (req, res) => {
+  console.log(req.query);
+  let followedId, followerId;
+  ({
+    followedId,
+    followerId
+  } = req.query);
+  console.log(followedId);
+  // console.log(followerId);
+  models.Follow.remove({
+    followedId,
+    followerId
+  }, (err) => {
+    if (err) res.end(err);
+    res.json({
+      followerId,
+      followedId
+    });
+    fee
+  })
+})
+
 app.get('/api/responses/:responseId/replies', urlencodedParser, (req, res) => {
   getResponses({
       parentResponseId: mongoose.Types.ObjectId(req.params.responseId)

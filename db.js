@@ -148,6 +148,7 @@ const followSchema = extendSchema(baseSchema, {
     required: true
   }
 })
+followSchema.index({followerId: 1, followedId: 1}, {unique: true});
 
 const Follow = mongoose.model('Follows', followSchema)
 
