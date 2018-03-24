@@ -82,6 +82,8 @@ const articleSchema = extendSchema(baseSchema, {
   // created: Date,
   // updated: Date,
 });
+
+
 articleSchema.plugin(mongooseLeanVirtuals);
 
 const readTime = (text) => {
@@ -91,6 +93,7 @@ articleSchema.virtual('date').get(function () {
   return this.updated;
 });
 const Article = mongoose.model('Article', articleSchema);
+
 articleSchema.virtual('time').get(function () {
   return readTime(this.body);
 });
@@ -122,6 +125,11 @@ const responseSchema = extendSchema(baseSchema, {
   }
 });
 
+articleSchema.pre('findOneAndRemove', function(next) {
+  console.log(this);
+  responseSchema.remove({articleId: this._id}).exec();
+  next();
+})
 responseSchema.virtual('time').get(function() {
   return readTime(this.body);
 });
@@ -132,7 +140,10 @@ responseSchema.virtual('responses', { ref: 'Response', localField: '_id', foreig
 responseSchema.plugin(mongooseLeanVirtuals);
 
 const Response = mongoose.model('Response', responseSchema);
-
+responseSchema.pre('findOneAndRemove', function(next) {
+  responseSchema.remove({parentResponseId: this._id}).exec();
+  next();
+})
 
 articleSchema.virtual('responses', { ref: 'Response', localField: '_id', foreignField: 'articleId'})
 

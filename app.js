@@ -80,25 +80,14 @@ app.get('/', (req, res) => {
 app.get('/blah', (req, res) => {
   res.end(`blah, ${req.session.passport.user}`);
 });
+
 app.post('/login', urlencodedParser,
   passport.authenticate('local', {
     failureRedirect: '/login'
   }),
-  (req, res) => {
-    models.User.findById(req.user.id, (err, user) => {
-      res.status(200).json({
-        id: user._id,
-        email: user.email,
-        blurb: user.blurb,
-        followers: [],
-        following: [],
-        articles: [],
-        responses: [],
-        feedItems: []
-      });
+  (req, res) => buildUser(req.user.id).then(u => res.json(u)).catch(console.log.bind(console))
+);
 
-    })
-  });
 
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname + '/login.html'));
@@ -177,22 +166,9 @@ app.get('/api/currUser', urlencodedParser, (req, res) => {
     feedItems: []
   };
   if (req.session.passport) {
-    models.User.findById(req.session.passport.user, (err, user) => {
-      if (user) {
-        res.status(200).json({
-          id: user._id,
-          email: user.email,
-          blurb: user.blurb,
-          followers: [],
-          following: [],
-          articles: [],
-          responses: [],
-          feedItems: []
-        });
-      } else {
-        res.status(200).json(nullUser)
-      }
-    })
+    buildUser(req.session.passport.user).then(u => res.json(u)).catch(console.log.bind(console));
+ 
+
   } else {
     res.json(nullUser);
   }
@@ -280,7 +256,15 @@ app.post('/api/articles', urlencodedParser, ensureAuthenticated, (req, res) => {
     }
 
   })
-})
+});
+
+app.delete('/api/articles/:articleId', urlencodedParser, ensureAuthenticated, (req, res) => {
+  models.Article.remove({_id: mongoose.Types.ObjectId(req.params.articleId)}, (err, doc) => {
+    
+    res.json(doc);
+
+  });
+});
 
 app.post('/api/responses', urlencodedParser, ensureAuthenticated, (req, res) => {
   let newResponse = new models.Response({
@@ -293,6 +277,7 @@ app.post('/api/responses', urlencodedParser, ensureAuthenticated, (req, res) => 
   });
   newResponse.save((err) => {
     if (err) {
+      console.log(err);
       res.status(400).end("invalid field(s)");
     } else {
       rObj = newResponse.toObject();
