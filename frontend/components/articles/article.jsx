@@ -33,26 +33,31 @@ class Article extends Component {
   componentDidMount() {
     if (!this.props.article || !this.props.article.body || this.props.article.id != this.props.match.params.id) {
       this.props.fetchArticle(this.props.match.params.id);
+    } else if (!this.props.parentResponse && this.props.parentId) {
+      this.props.fetchArticle(this.props.parentId);
+    } else if (!this.props.parentArticle && this.props.parentArticleId) {
+      this.props.fetchParentArticle(this.props.parentArticleId);
     }
-    if (!this.props.parentResponse && this.props.parentId) this.props.fetchArticle(this.props.parentId);
-    if (!this.props.parentArticle && this.props.parentArticleId) this.props.fetchParentArticle(this.props.parentArticleId);
 
-    window.scrollTo(0,0);
+    window.scrollTo(0, 0);
   }
   componentWillReceiveProps(nextProps) {
-    
-    // if (this.props.match.url.includes('article') &&
-      if (this.props.match.params.id != nextProps.match.params.id) {
-      this.props.fetchArticle(nextProps.match.params.id);
+    if (this.props.article && this.props.article.body) {
+      return;
     }
-    if (!this.props.parentResponse && this.props.parentId) this.props.fetchArticle(this.props.parentId);
-    if (!this.props.parentArticle && this.props.parentArticleId) this.props.fetchParentArticle(this.props.parentArticleId);
-
+    // if (this.props.match.url.includes('article') &&
+    if (this.props.match.params.id != nextProps.match.params.id) {
+      this.props.fetchArticle(nextProps.match.params.id);
+    } else if (!this.props.parentResponse && this.props.parentId) {
+      this.props.fetchArticle(this.props.parentId);
+    } else if (!this.props.parentArticle && this.props.parentArticleId) {
+      this.props.fetchParentArticle(this.props.parentArticleId);
+    }
 
   }
   render() {
     if (this.state.redirToIndex) return <Redirect to="/" />;
-    
+
     if (!this.props.article || !this.props.article.body) return <div>loading...</div>;
     let article = this.props.article;
     let articlePs = article.body.split("\n").map((p, i) => <p key={i}>{p}</p>)
@@ -103,7 +108,7 @@ class Article extends Component {
         </div>
         <div className="responses-container">
           <div className="response-header">Responses</div>
-          <ResponseForm id={article.id} articleId={this.props.articleId} isResponse={this.props.match.url.includes("response")} />
+          <ResponseForm id={article.id} articleId={!!this.props.parentArticleId ? this.props.parentArticleId : this.props.article.id} isResponse={this.props.match.url.includes("response")} />
           <ResponseList id={article.id} isResponse={this.props.match.url.includes("response")} />
         </div>
       </div>
@@ -116,7 +121,7 @@ const mapStateToProps = ({ entities, ui, session }, ownProps) => ({
   currUID: session.currentUser ? session.currentUser.id : null,
   articleId: ui.currArticle //this is necessary because response form can be for either article or response and in the latter case we need the current article id as well as response id
 
-}); 
+});
 const mapDispatchToProps = (dispatch) => ({
   fetchArticle: (id) => dispatch(fetchArticle(id)),
   deleteArticle: (id) => dispatch(deleteArticle(id))
@@ -126,7 +131,7 @@ const mapStateToResponse = ({ entities, ui, session }, ownProps) => {
   const article = entities.responses[ownProps.match.params.id];
   let parentId, parentArticleId;
   if (article) parentId = article.parent_response_id;
-  if (article && !parentId) parentArticleId = article.article_id; //article being responded to
+  if (article && !parentId) parentArticleId = article.articleId; //article being responded to
   let parentArticle = entities.articles[parentArticleId];
   return ({
     article,

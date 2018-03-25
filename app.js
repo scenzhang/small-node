@@ -125,24 +125,28 @@ function getFollowers(followedId) {
 
 function buildUser(uid) {
   return Promise.all([getUser(uid), getArticles({
-    authorId: uid
-  }), getResponses({
-    authorId: uid
-  }), getFollows(uid), getFollowers(uid)])
-  .then(vals => {
-    u = vals[0];
-    u.id = u._id;
-    u.articles = vals[1];
-    u.responses = vals[2];
-    u.following = vals[3].map(f => f.followedId);
-    u.followers = vals[4].map(f => f.followerId);
-    return Promise.all([u, getArticles({ authorId: { $in: u.following }})]);
-  }).then(results => {
-    results[0].feedItems = results[1].map(a => a._id);
-    return results[0];
+      authorId: uid
+    }), getResponses({
+      authorId: uid
+    }), getFollows(uid), getFollowers(uid)])
+    .then(vals => {
+      u = vals[0];
+      u.id = u._id;
+      u.articles = vals[1];
+      u.responses = vals[2];
+      u.following = vals[3].map(f => f.followedId);
+      u.followers = vals[4].map(f => f.followerId);
+      return Promise.all([u, getArticles({
+        authorId: {
+          $in: u.following
+        }
+      })]);
+    }).then(results => {
+      results[0].feedItems = results[1].map(a => a._id);
+      return results[0];
 
-  })
-  .catch(console.log.bind(console));  // just catch everything here
+    })
+    .catch(console.log.bind(console)); // just catch everything here
   ;
 
 
@@ -150,8 +154,7 @@ function buildUser(uid) {
 
 app.get('/api/users/:userId', urlencodedParser, (req, res) => {
   const uid = mongoose.Types.ObjectId(req.params.userId);
-  buildUser(uid).then(u => res.json(u)).catch(console.log.bind(console));
-  ;
+  buildUser(uid).then(u => res.json(u)).catch(console.log.bind(console));;
 })
 
 app.get('/api/currUser', urlencodedParser, (req, res) => {
@@ -167,7 +170,7 @@ app.get('/api/currUser', urlencodedParser, (req, res) => {
   };
   if (req.session.passport) {
     buildUser(req.session.passport.user).then(u => res.json(u)).catch(console.log.bind(console));
- 
+
 
   } else {
     res.json(nullUser);
@@ -213,11 +216,15 @@ app.get('/api/articles', urlencodedParser, (req, res) => {
   models.Article.find({}).populate('authorId').lean({
     virtuals: true
   }).exec((err, articles) => {
-    articles.forEach((_, i, as) => {
-      as[i].author = as[i].authorId.name;
-      as[i].authorId = as[i].authorId._id;
-    });
-    res.json(articles);
+    if (err) {
+      console.log(err)
+    } else {
+      articles.forEach((_, i, as) => {
+        as[i].author = as[i].authorId.name;
+        as[i].authorId = as[i].authorId._id;
+      });
+      res.json(articles);
+    }
   })
 });
 
@@ -259,13 +266,23 @@ app.post('/api/articles', urlencodedParser, ensureAuthenticated, (req, res) => {
 });
 
 app.delete('/api/articles/:articleId', urlencodedParser, ensureAuthenticated, (req, res) => {
-  models.Article.remove({_id: mongoose.Types.ObjectId(req.params.articleId)}, (err, doc) => {
-    
+  models.Article.findOne({
+    _id: mongoose.Types.ObjectId(req.params.articleId)
+  }, (err, doc) => {
+    doc.remove();
     res.json(doc);
 
   });
 });
 
+app.delete('/api/responses/:responseId', urlencodedParser, ensureAuthenticated, (req, res) => {
+  models.Response.findOne({
+    _id: mongoose.Types.ObjectId(req.params.responseId)
+  }, (err, doc) => {
+    doc.remove();
+    res.json(doc);
+  })
+})
 app.post('/api/responses', urlencodedParser, ensureAuthenticated, (req, res) => {
   let newResponse = new models.Response({
     authorId: req.session.passport.user,
@@ -507,7 +524,7 @@ app.delete('/api/follows', urlencodedParser, (req, res) => {
     });
     fee
   })
-})
+});
 
 app.get('/api/responses/:responseId/replies', urlencodedParser, (req, res) => {
   getResponses({

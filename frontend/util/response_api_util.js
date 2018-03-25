@@ -9,10 +9,10 @@ export const fetchReplies = (id) => {
   return $.ajax({url: `api/responses/${id}/replies`});
 }
 
-export const createResponse = ({body, article_id, parentResponseId}) => $.ajax({
+export const createResponse = ({body, articleId, parentResponseId}) => $.ajax({
   url: `api/responses`,
   method: 'post',
-  data: {body, articleId: article_id, parentResponseId}
+  data: {body, articleId, parentResponseId}
 });
 export const updateResponse = ({id, title, body}) => $.ajax({
   url: `api/responses/${id}`,

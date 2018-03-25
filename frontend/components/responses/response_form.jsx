@@ -39,7 +39,7 @@ class ResponseForm extends Component {
   }
   handleSubmit(e) {
     e.stopPropagation();
-    const newResp = {body: this.state.body, article_id: this.props.articleId};
+    const newResp = {body: this.state.body, articleId: this.props.articleId};
     if (this.props.isResponse) newResp.parentResponseId = this.props.id;
     console.log(this.props);
     console.log(newResp);
