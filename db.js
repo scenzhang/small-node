@@ -142,11 +142,19 @@ responseSchema.plugin(mongooseLeanVirtuals);
 
 const Response = mongoose.model('Response', responseSchema);
 responseSchema.pre('remove', function(next) {
-  Response.remove({parentResponseId: this._id}, function (err, res) {
-    console.log(this);
+  Response.find({parentResponseId: this._id}, function (err, res) {
+    res.forEach(r => {
+      r.remove();
+    })
   });
   next();
 })
+
+function removeResponses(rootId) {
+  Response.findById(rootId, (err, res) => {
+    
+  })
+}
 
 articleSchema.virtual('responses', { ref: 'Response', localField: '_id', foreignField: 'articleId'})
 

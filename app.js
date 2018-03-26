@@ -463,24 +463,20 @@ app.get('/api/old/responses/:responseId', urlencodedParser, (req, res) => {
   })
 })
 app.patch('/api/articles/:articleId', urlencodedParser, (req, res) => {
-  console.log(req.body);
   models.Article.findByIdAndUpdate(mongoose.Types.ObjectId(req.params.articleId), {
     $set: req.body
   }, {
     new: true
   }, (err, doc) => {
-    console.log(doc);
     res.json(doc);
   })
 })
 app.patch('/api/responses/:responseId', urlencodedParser, (req, res) => {
-  console.log(req.body);
   models.Response.findByIdAndUpdate(mongoose.Types.ObjectId(req.params.responseId), {
     $set: req.body
   }, {
     new: true
   }, (err, doc) => {
-    console.log(doc);
     res.json(doc);
   })
 })
@@ -490,7 +486,6 @@ app.get('/api/follows', urlencodedParser, (req, res) => {
 });
 
 app.post('/api/follows', urlencodedParser, (req, res) => {
-  console.log(req.body);
   let newFollow = new models.Follow({
     followerId: req.body.followerId,
     followedId: req.body.followedId
@@ -505,13 +500,11 @@ app.post('/api/follows', urlencodedParser, (req, res) => {
 });
 
 app.delete('/api/follows', urlencodedParser, (req, res) => {
-  console.log(req.query);
   let followedId, followerId;
   ({
     followedId,
     followerId
   } = req.query);
-  console.log(followedId);
   // console.log(followerId);
   models.Follow.remove({
     followedId,
