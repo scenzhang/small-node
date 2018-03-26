@@ -7,7 +7,10 @@ import DateReadtime from '../articles/date_readtime';
 class _ResponseListItem extends Component {
   render() {
     if (!this.props.response) return <p>loading..</p>;
-    const responses = this.props.response.response_ids.map((id) => this.props.responses[id])
+    const responses = this.props.response.responseIds.map((id) => this.props.responses[id]);
+    if (responses.some(e => !e)) {
+      return <p>loading..</p>
+    }
     return (
       <li key={this.props.response.id} className={`level-${this.props.level}`} >
       <div className ="response">

@@ -55,7 +55,7 @@ class UserProfile extends Component {
                       <UserProfileItem
                         body={response.body}
                         author={response.author}
-                        numResponses={response.response_ids.length}
+                        numResponses={response.responseIds.length}
                         date={response.date}
                         time={response.time}
                         id={response.id}
@@ -78,7 +78,7 @@ class UserProfile extends Component {
                         body={article.body}
                         blurb={article.blurb}
                         author={article.author}
-                        numResponses={article.response_ids.length}
+                        numResponses={article.responseIds.length}
                         date={article.date}
                         time={article.time}
                         id={article.id}

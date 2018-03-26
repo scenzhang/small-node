@@ -238,7 +238,7 @@ app.get('/api/articles', urlencodedParser, (req, res) => {
 //     }).exec((err, responses) => {
 //       const responseList = responses.map((r) => r.id);
 //       aObj = article.toObject();
-//       aObj.response_ids = responseList;
+//       aObj.responseIds = responseList;
 //       res.json(aObj);
 //     })
 //     // res.json(article);
@@ -298,7 +298,7 @@ app.post('/api/responses', urlencodedParser, ensureAuthenticated, (req, res) => 
       res.status(400).end("invalid field(s)");
     } else {
       rObj = newResponse.toObject();
-      rObj.response_ids = [];
+      rObj.responseIds = [];
       res.status(200).json(rObj);
     }
   })
@@ -326,7 +326,7 @@ function getResponses(param) {
         from: "responses",
         localField: "_id",
         foreignField: "parentResponseId",
-        as: "response_ids"
+        as: "responseIds"
       }
     },
     {
@@ -355,7 +355,7 @@ function getResponses(param) {
             }
           }, 200]
         },
-        response_ids: "$response_ids._id",
+        responseIds: "$responseIds._id",
         author: "$author.name"
 
       }
@@ -374,7 +374,7 @@ function getArticles(param) {
         from: "responses",
         localField: "_id",
         foreignField: "articleId",
-        as: "response_ids"
+        as: "responseIds"
       }
     },
     {
@@ -403,7 +403,7 @@ function getArticles(param) {
             }
           }, 200]
         },
-        response_ids: "$response_ids._id",
+        responseIds: "$responseIds._id",
         author: "$author.name"
       }
     }
@@ -427,7 +427,7 @@ app.get('/api/articles/:articleId/responsesOld', urlencodedParser, (req, res) =>
         parentResponseId: r.id
       }, (err, replies) => {
         let rObj = r.toObject();
-        rObj.response_ids = replies.map(resp => resp.id);
+        rObj.responseIds = replies.map(resp => resp.id);
         rObj.author = rObj.authorId.name;
         delete rObj.authorId;
         rs.push(rObj);
@@ -456,7 +456,7 @@ app.get('/api/old/responses/:responseId', urlencodedParser, (req, res) => {
     }, (err, responses) => {
       const respList = responses.map((r) => r.id);
       let rObj = response.toObject();
-      rObj.response_ids = respList;
+      rObj.responseIds = respList;
 
       res.json(rObj);
     })
@@ -549,7 +549,7 @@ app.get('/api/old/responses/:responseId/replies', urlencodedParser, (req, res) =
         parentResponseId: r.id
       }, (err, replies) => {
         let rObj = r.toObject();
-        rObj.response_ids = replies.map(resp => resp.id);
+        rObj.responseIds = replies.map(resp => resp.id);
         rs.push(rObj);
         if (rs.length === responses.length) {
           res.json(rs)

@@ -35,13 +35,17 @@ class Article extends Component {
       this.props.fetchArticle(this.props.match.params.id);
     } else if (!this.props.parentResponse && this.props.parentId) {
       this.props.fetchArticle(this.props.parentId);
-    } else if (!this.props.parentArticle && this.props.parentArticleId) {
+    }
+    if (!this.props.parentArticle && this.props.parentArticleId) {
       this.props.fetchParentArticle(this.props.parentArticleId);
     }
 
     window.scrollTo(0, 0);
   }
   componentWillReceiveProps(nextProps) {
+    if (!this.props.parentArticle && this.props.parentArticleId) {
+      this.props.fetchParentArticle(this.props.parentArticleId);
+    }
     if (this.props.article && this.props.article.body) {
       return;
     }
@@ -50,9 +54,8 @@ class Article extends Component {
       this.props.fetchArticle(nextProps.match.params.id);
     } else if (!this.props.parentResponse && this.props.parentId) {
       this.props.fetchArticle(this.props.parentId);
-    } else if (!this.props.parentArticle && this.props.parentArticleId) {
-      this.props.fetchParentArticle(this.props.parentArticleId);
     }
+  
 
   }
   render() {
@@ -68,24 +71,24 @@ class Article extends Component {
             <UserAbout userId={article.authorId} link={true} />
             <ArticleDateReadtime date={article.date} time={article.time} />
             {
-              this.props.parentArticle && this.props.parentArticle.response_ids &&
+              this.props.parentArticle && this.props.parentArticle.responseIds &&
               <Link to={`/articles/${this.props.parentArticleId}`}>
                 <MiniArticlePreview
                   title={this.props.parentArticle.title}
                   author={this.props.parentArticle.author}
-                  responses={this.props.parentArticle.response_ids.length}
+                  responses={this.props.parentArticle.responseIds.length}
                 />
 
               </Link>
             }
             {
-              this.props.parentResponse && this.props.parentResponse.response_ids &&//if parent response isn't loaded don't evaluate rest
+              this.props.parentResponse && this.props.parentResponse.responseIds &&//if parent response isn't loaded don't evaluate rest
               <Link to={`${this.props.parentId}`}>
 
                 <MiniArticlePreview
                   title={this.props.parentResponse.body}
                   author={this.props.parentResponse.author}
-                  responses={this.props.parentResponse.response_ids.length}
+                  responses={this.props.parentResponse.responseIds.length}
                 />
               </Link>
             }
@@ -130,7 +133,7 @@ const mapDispatchToProps = (dispatch) => ({
 const mapStateToResponse = ({ entities, ui, session }, ownProps) => {
   const article = entities.responses[ownProps.match.params.id];
   let parentId, parentArticleId;
-  if (article) parentId = article.parent_response_id;
+  if (article) parentId = article.parentResponseId;
   if (article && !parentId) parentArticleId = article.articleId; //article being responded to
   let parentArticle = entities.articles[parentArticleId];
   return ({

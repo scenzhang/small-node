@@ -17,7 +17,7 @@ const ResponsesReducer = (state = {}, action) => {
   switch (action.type) {
     // case RECEIVE_ARTICLE:
     //   {
-    //     action.article.response_ids.forEach((ri) => {
+    //     action.article.responseIds.forEach((ri) => {
     //       newState[] = resp;
     //     });
     //     return newState;
