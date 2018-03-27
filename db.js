@@ -141,6 +141,7 @@ responseSchema.virtual('responses', { ref: 'Response', localField: '_id', foreig
 responseSchema.plugin(mongooseLeanVirtuals);
 
 const Response = mongoose.model('Response', responseSchema);
+
 responseSchema.pre('remove', function(next) {
   Response.find({parentResponseId: this._id}, function (err, res) {
     res.forEach(r => {
