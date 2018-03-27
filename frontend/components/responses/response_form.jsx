@@ -41,8 +41,6 @@ class ResponseForm extends Component {
     e.stopPropagation();
     const newResp = {body: this.state.body, articleId: this.props.articleId};
     if (this.props.isResponse) newResp.parentResponseId = this.props.id;
-    console.log(this.props);
-    console.log(newResp);
     this.props.createResponse(newResp);
     this.setState({body: "", formHidden: true});
   }

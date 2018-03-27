@@ -95,7 +95,6 @@ articleSchema.virtual('date').get(function () {
 const Article = mongoose.model('Article', articleSchema);
 
 articleSchema.virtual('time').get(function () {
-  console.log(this);
   return readTime(this.body);
 });
 articleSchema.virtual('blurb').get(function () {
@@ -127,7 +126,6 @@ const responseSchema = extendSchema(baseSchema, {
 });
 
 articleSchema.pre('remove', function(next) {
-  console.log(this);
   Response.remove({articleId: this._id}).exec();
   next();
 })
