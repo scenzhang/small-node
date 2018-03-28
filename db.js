@@ -35,8 +35,11 @@ const userSchema = extendSchema(baseSchema, {
   // created: Date,
   // updated: Date
 });
+userSchema.pre('update', function(next) { 
+  this.update({}, { $set: {updated: new Date()}});
+  next();
+})
 const User = mongoose.model('User', userSchema);
-
 const storySchema = extendSchema(baseSchema, {
   title: {
     type: String,
@@ -129,6 +132,10 @@ articleSchema.pre('remove', function(next) {
   Response.remove({articleId: this._id}).exec();
   next();
 })
+articleSchema.pre('update', function(next) { 
+  this.update({}, { $set: {updated: new Date()}});
+  next();
+})
 responseSchema.virtual('time').get(function() {
   return readTime(this.body);
 });
@@ -146,6 +153,10 @@ responseSchema.pre('remove', function(next) {
       r.remove();
     })
   });
+  next();
+})
+responseSchema.pre('update', function(next) { 
+  this.update({}, { $set: {updated: new Date()}});
   next();
 })
 
