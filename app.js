@@ -179,7 +179,7 @@ app.get('/api/currUser', urlencodedParser, (req, res) => {
 
 app.listen(process.env.PORT, () => console.log(`listening on port ${process.env.PORT}`));
 app.post('/api/users', urlencodedParser, (req, res) => {
-  bcrypt.hash(req.body.password, 5, (err, hash) => {
+  bcrypt.hash(req.body.password, 5).then((err, hash) => {
     let newUser = new models.User({
       email: req.body.email,
       passwordDigest: hash,
